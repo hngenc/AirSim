@@ -192,6 +192,11 @@ public:
         return controller_->getCollisionInfo();
     }
 
+    BatteryInfo getBatteryInfo()
+    {
+        return controller_->getBatteryInfo();
+    }
+
     RCData getRCData()
     {
         return controller_->getRCData();

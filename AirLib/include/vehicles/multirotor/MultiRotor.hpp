@@ -43,6 +43,7 @@ public:
         params_ = params;
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
+        battery_ = new powerlib::Battery(14.6, 5.8);
 
         createRotors(*params_, rotors_, environment);
         createDragVertices();
@@ -69,6 +70,11 @@ public:
 
         //reset sensors last after their ground truth has been reset
         resetSensors();
+
+        // reset battery
+        if (battery_ != nullptr) {
+            battery_->reset();
+        }
     }
 
     virtual void update() override
@@ -107,6 +113,13 @@ public:
         for (uint rotor_index = 0; rotor_index < rotors_.size(); ++rotor_index) {
             rotors_.at(rotor_index).setControlSignal(
                 getController()->getVertexControlSignal(rotor_index));
+        }
+
+        // update battery info
+        if (battery_ != nullptr) {
+            BatteryInfo battery_info;
+            battery_info.state_of_charge = battery_->StateOfCharge();
+            getController()->setBatteryInfo(battery_info);
         }
     }
 

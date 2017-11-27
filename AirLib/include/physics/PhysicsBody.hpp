@@ -4,6 +4,7 @@
 #ifndef airsim_core_PhysicsBody_hpp
 #define airsim_core_PhysicsBody_hpp
 
+#include "Battery.hpp"
 #include "common/Common.hpp"
 #include "common/UpdatableObject.hpp"
 #include "PhysicsBodyVertex.hpp"
@@ -144,7 +145,7 @@ public: //methods
     real_T getMassInv()  const
     {
         return mass_inv_;
-    }    
+    }
     const Matrix3x3r& getInertia()  const
     {
         return inertia_;
@@ -223,6 +224,45 @@ public: //methods
         return collison_response_info_;
     }
 
+    bool hasBattery() const { return battery_ != nullptr; }
+
+    powerlib::Battery *getBattery() { return battery_; }
+
+    float getStateOfCharge() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->StateOfCharge();
+        } else {
+            return -100.0;
+        }
+    }
+
+    float getVotage() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->Voltage();
+        } else {
+            return 0.0;
+        }
+    }
+
+    float getNominalVoltage() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->NominalVoltage();
+        } else {
+            return 0.0;
+        }
+    }
+
+    float getCapacity() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->Capacity();
+        } else {
+            return 0.0;
+        }
+    }
 
 public:
     //for use in physics angine: //TODO: use getter/setter or friend method?
@@ -241,6 +281,9 @@ private:
     CollisonResponseInfo collison_response_info_;
 
     Environment* environment_ = nullptr;
+
+protected:
+    powerlib::Battery* battery_ = nullptr;
 };
 
 }} //namespace

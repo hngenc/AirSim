@@ -4,6 +4,7 @@
 #ifndef airsim_core_FastPhysicsEngine_hpp
 #define airsim_core_FastPhysicsEngine_hpp
 
+#include "Battery.hpp"
 #include "common/Common.hpp"
 #include "physics/PhysicsEngineBase.hpp"
 #include <iostream>
@@ -20,7 +21,7 @@ class FastPhysicsEngine : public PhysicsEngineBase {
 public:
     FastPhysicsEngine(bool enable_ground_lock = true)
         : enable_ground_lock_(enable_ground_lock)
-    { 
+    {
     }
 
     //*** Start: UpdatableState implementation ***//
@@ -85,13 +86,18 @@ private:
         CollisonResponseInfo& collison_response_info = body.getCollisionResponseInfo();
         //if collision was already responsed then do not respond to it until we get updated information
         if (collison_info.has_collided && collison_response_info.collision_time_stamp != collison_info.time_stamp) {
-            bool is_collison_response = getNextKinematicsOnCollison(dt, collison_info, body, 
+            bool is_collison_response = getNextKinematicsOnCollison(dt, collison_info, body,
                 current, next, next_wrench, enable_ground_lock_);
             updateCollisonResponseInfo(collison_info, next, is_collison_response, collison_response_info);
         }
 
-        //Utils::log(Utils::stringf("T-VEL %s %" PRIu64 ": ", 
+        //Utils::log(Utils::stringf("T-VEL %s %" PRIu64 ": ",
         //    VectorMath::toString(next.twist.linear).c_str(), clock()->getStepCount()));
+        if (body.hasBattery()) {
+          // TODO(wcui) replace power formular, currently, use P = K * V^2
+          auto vel = next.twist.linear + next.twist.angular;
+          body.getBattery()->update(dt, 100.0f * vel.dot(vel));
+        }
 
         body.setKinematics(next);
         body.setWrench(next_wrench);
@@ -110,7 +116,7 @@ private:
     }
 
     //return value indicates if collison response was generated
-    static bool getNextKinematicsOnCollison(TTimeDelta dt, const CollisionInfo& collison_info, const PhysicsBody& body, 
+    static bool getNextKinematicsOnCollison(TTimeDelta dt, const CollisionInfo& collison_info, const PhysicsBody& body,
         const Kinematics::State& current, Kinematics::State& next, Wrench& next_wrench, bool enable_ground_lock)
     {
         /************************* Collison response ************************/
@@ -135,8 +141,8 @@ private:
         const bool is_ground_normal = Utils::isApproximatelyEqual(std::abs(normal_body.z()), 1.0f, kAxisTolerance);
         bool ground_lock = false;
         if (is_ground_normal
-            || Utils::isApproximatelyEqual(std::abs(normal_body.x()), 1.0f, kAxisTolerance) 
-            || Utils::isApproximatelyEqual(std::abs(normal_body.y()), 1.0f, kAxisTolerance) 
+            || Utils::isApproximatelyEqual(std::abs(normal_body.x()), 1.0f, kAxisTolerance)
+            || Utils::isApproximatelyEqual(std::abs(normal_body.y()), 1.0f, kAxisTolerance)
            ) {
             //think of collison occured along the surface, not at point
             r = Vector3r::Zero();
@@ -158,7 +164,7 @@ private:
             http://chrishecker.com/images/e/e7/Gdmphys3.pdf
             V(t+1) = V(t) + j*N / m
         */
-        const real_T impulse_mag_denom = 1.0f / body.getMass() + 
+        const real_T impulse_mag_denom = 1.0f / body.getMass() +
             (body.getInertiaInv() * r.cross(normal_body))
             .cross(r)
             .dot(normal_body);
@@ -171,7 +177,7 @@ private:
         //we will use friction to modify component in direction of tangent
         const Vector3r contact_tang_body = contact_vel_body - normal_body * normal_body.dot(contact_vel_body);
         const Vector3r contact_tang_unit_body = contact_tang_body.normalized();
-        const real_T friction_mag_denom =  1.0f / body.getMass() + 
+        const real_T friction_mag_denom =  1.0f / body.getMass() +
             (body.getInertiaInv() * r.cross(contact_tang_unit_body))
             .cross(r)
             .dot(contact_tang_unit_body);
@@ -187,7 +193,7 @@ private:
         //there is no acceleration during collison response
         next.accelerations.linear = Vector3r::Zero();
         next.accelerations.angular = Vector3r::Zero();
- 
+
         next.pose = current.pose;
         if (enable_ground_lock && ground_lock) {
             float pitch, roll, yaw;
@@ -235,7 +241,7 @@ private:
     //    return grounded_ != 0;
     //}
 
-    static Wrench getDragWrench(const PhysicsBody& body, const Quaternionr& orientation, 
+    static Wrench getDragWrench(const PhysicsBody& body, const Quaternionr& orientation,
         const Vector3r& linear_vel, const Vector3r& angular_vel_body)
     {
         //add linear drag due to velocity we had since last dt seconds
@@ -312,7 +318,7 @@ private:
 
         //Utils::log(Utils::stringf("B-WRN %s: ", VectorMath::toString(body_wrench.force).c_str()));
         //Utils::log(Utils::stringf("D-WRN %s: ", VectorMath::toString(drag_wrench.force).c_str()));
-        
+
         /************************* Update accelerations due to force and torque ************************/
         //get new acceleration due to force - we'll use this acceleration in next time step
         next.accelerations.linear = (next_wrench.force / body.getMass()) + body.getEnvironment().getState().gravity;
@@ -333,7 +339,7 @@ private:
         next.twist.linear = current.twist.linear + (current.accelerations.linear + next.accelerations.linear) * (0.5f * dt_real);
         next.twist.angular = current.twist.angular + (current.accelerations.angular + next.accelerations.angular) * (0.5f * dt_real);
 
-        //if controller has bug, velocities can increase idenfinitely 
+        //if controller has bug, velocities can increase idenfinitely
         //so we need to clip this or everything will turn in to infinity/nans
 
         if (next.twist.linear.squaredNorm() > EarthUtils::SpeedOfLight * EarthUtils::SpeedOfLight) { //speed of light
@@ -389,7 +395,7 @@ private:
 
             //re-normalize quaternion to avoid accumulating error
             next.pose.orientation.normalize();
-        } 
+        }
         else //no change in angle, because angular velocity is zero (normalized vector is undefined)
             next.pose.orientation = current_pose.orientation;
     }

@@ -82,6 +82,8 @@ private:
 
     CollisonResponseInfo collision_response_info;
 
+    int SoC;
+
     bool enable_rpc_;
     std::string api_server_address_;
     uint16_t api_server_port_;
