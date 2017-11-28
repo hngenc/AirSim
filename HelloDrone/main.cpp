@@ -20,7 +20,7 @@ int main()
 {
     using namespace msr::airlib;
 
-    msr::airlib::MultirotorRpcLibClient client;
+    msr::airlib::MultirotorRpcLibClient client("10.157.90.62");
     typedef VehicleCameraBase::ImageRequest ImageRequest;
     typedef VehicleCameraBase::ImageResponse ImageResponse;
     typedef VehicleCameraBase::ImageType ImageType;
@@ -58,6 +58,7 @@ int main()
             }
         }
 
+        std::cout << "Soc(%) " << client.getStateOfCharge() << std::endl;
         std::cout << "Press Enter to arm the drone" << std::endl; std::cin.get();
         client.enableApiControl(true);
         client.armDisarm(true);
@@ -93,6 +94,7 @@ int main()
         std::cout << "moveByVelocityZ(0, " << -speed << "," << z << "," << duration << ")" << std::endl;
         client.moveByVelocityZ(0, -speed, z, duration, driveTrain, yaw_mode);
         std::this_thread::sleep_for(std::chrono::duration<double>(duration));
+        std::cout << "Soc(%) " << client.getStateOfCharge() << std::endl;
 
         client.hover();
 

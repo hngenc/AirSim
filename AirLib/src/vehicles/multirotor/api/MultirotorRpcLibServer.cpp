@@ -110,7 +110,7 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(DroneApi* drone, string server_ad
     (static_cast<rpc::server*>(getServer()))->
         bind("getCollisionInfo", [&]() -> MultirotorRpcLibAdapators::CollisionInfo { return getDroneApi()->getCollisionInfo(); });
     (static_cast<rpc::server*>(getServer()))->
-        bind("getBatteryInfo", [&]() -> float { return getDroneApi()->getBatteryInfo().state_of_charge; });
+        bind("getStateOfCharge", [&]() -> float { return getDroneApi()->getBatteryInfo().state_of_charge; });
 }
 
 //required for pimpl
