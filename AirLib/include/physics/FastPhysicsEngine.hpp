@@ -94,9 +94,8 @@ private:
         //Utils::log(Utils::stringf("T-VEL %s %" PRIu64 ": ",
         //    VectorMath::toString(next.twist.linear).c_str(), clock()->getStepCount()));
         if (body.hasBattery()) {
-          // TODO(wcui) replace power formular, currently, use P = K * V^2
-          auto vel = next.twist.linear + next.twist.angular;
-          body.getBattery()->update(dt, 100.0f * vel.dot(vel));
+          auto P = p_estimator_.estimate(current, next);
+          body.getBattery()->update(dt, P);
         }
 
         body.setKinematics(next);
@@ -409,6 +408,7 @@ private:
     std::stringstream debug_string_;
     int grounded_;
     bool enable_ground_lock_;
+    powerlib::PowerEstimator p_estimator_;
 
 };
 
