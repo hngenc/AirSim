@@ -8,10 +8,18 @@
 #include "common/CommonStructs.hpp"
 #include "Rotor.hpp"
 #include "controllers/ControllerBase.hpp"
+#include "controllers/Settings.hpp"
 #include "MultiRotorParams.hpp"
 #include <vector>
 #include "physics/PhysicsBody.hpp"
 
+#ifndef DEFAULT_VOLTAGE
+#define DEFAULT_VOLTAGE (11.1f)
+#endif  // DEFAULT_VOLTAGE
+
+#ifndef DEFAULT_CAPACITY
+#define DEFAULT_CAPACITY (5.5f)
+#endif  // DEFAULT_CAPACITY
 
 namespace msr { namespace airlib {
 
@@ -43,7 +51,10 @@ public:
         params_ = params;
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
-        battery_ = new powerlib::Battery(14.6, 5.8);
+        Settings& settings = Settings::singleton();
+        float v = settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE);
+        float c = settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY);
+        battery_ = new powerlib::Battery(v, c);
 
         createRotors(*params_, rotors_, environment);
         createDragVertices();
