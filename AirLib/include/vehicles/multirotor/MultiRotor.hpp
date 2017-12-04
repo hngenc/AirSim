@@ -126,10 +126,11 @@ public:
                 getController()->getVertexControlSignal(rotor_index));
         }
 
-        // update battery info
+        // wcui: update battery info after kinematics is updated
         if (battery_ != nullptr) {
             BatteryInfo battery_info;
             battery_info.state_of_charge = battery_->StateOfCharge();
+            battery_info.voltage = battery_->Voltage();
             getController()->setBatteryInfo(battery_info);
         }
     }

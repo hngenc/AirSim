@@ -93,8 +93,10 @@ private:
 
         //Utils::log(Utils::stringf("T-VEL %s %" PRIu64 ": ",
         //    VectorMath::toString(next.twist.linear).c_str(), clock()->getStepCount()));
+
+        // wcui: Update battery stats of the physical body
         if (body.hasBattery()) {
-          auto P = p_estimator_.estimate(current, next);
+          auto P = p_estimator_.Estimate(body.getMass(), dt, current, next);
           body.getBattery()->update(dt, P);
         }
 

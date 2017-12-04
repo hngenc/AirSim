@@ -206,8 +206,11 @@ struct GeoPose {
     GeoPoint position;
 };
 
+// TODO(wcui): Change this class if you want to provide more information to
+// RPC Client
 struct BatteryInfo {
     float state_of_charge;
+    float voltage;
 };
 
 }} //namespace

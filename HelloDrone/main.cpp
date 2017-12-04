@@ -16,7 +16,7 @@ STRICT_MODE_ON
 
 
 
-int main() 
+int main()
 {
     using namespace msr::airlib;
 
@@ -25,7 +25,7 @@ int main()
     typedef VehicleCameraBase::ImageResponse ImageResponse;
     typedef VehicleCameraBase::ImageType ImageType;
     typedef common_utils::FileSystem FileSystem;
-    
+
     try {
         client.confirmConnection();
 
@@ -35,7 +35,7 @@ int main()
         std::cout << "# of images recieved: " << response.size() << std::endl;
 
         if (response.size() > 0) {
-            std::cout << "Enter path with ending separator to save images (leave empty for no save)" << std::endl; 
+            std::cout << "Enter path with ending separator to save images (leave empty for no save)" << std::endl;
             std::string path;
             std::getline(std::cin, path);
 
@@ -59,26 +59,27 @@ int main()
         }
 
         std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
+        std::cout << "Voltage " << client.getVoltage() << std::endl;
         std::cout << "Press Enter to arm the drone" << std::endl; std::cin.get();
         client.enableApiControl(true);
         client.armDisarm(true);
 
         std::cout << "Press Enter to takeoff" << std::endl; std::cin.get();
-        float takeoffTimeout = 5; 
+        float takeoffTimeout = 5;
         client.takeoff(takeoffTimeout);
 
-        // switch to explicit hover mode so that this is the fallback when 
+        // switch to explicit hover mode so that this is the fallback when
         // move* commands are finished.
         std::this_thread::sleep_for(std::chrono::duration<double>(5));
         client.hover();
 
         std::cout << "Press Enter to fly in a 10m box pattern at 3 m/s velocity" << std::endl; std::cin.get();
         // moveByVelocityZ is an offboard operation, so we need to set offboard mode.
-        client.enableApiControl(true); 
+        client.enableApiControl(true);
         auto position = client.getPosition();
-        float z = position.z(); // current position (NED coordinate system).  
+        float z = position.z(); // current position (NED coordinate system).
         const float speed = 3.0f;
-        const float size = 10.0f; 
+        const float size = 10.0f;
         const float duration = size / speed;
         DrivetrainType driveTrain = DrivetrainType::ForwardOnly;
         YawMode yaw_mode(true, 0);
@@ -95,6 +96,7 @@ int main()
         client.moveByVelocityZ(0, -speed, z, duration, driveTrain, yaw_mode);
         std::this_thread::sleep_for(std::chrono::duration<double>(duration));
         std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
+        std::cout << "Voltage " << client.getVoltage() << std::endl;
 
         client.hover();
 

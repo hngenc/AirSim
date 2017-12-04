@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sstream>
 #include <fstream>
+#include <map>
 #include <memory>
 #include "common/CommonStructs.hpp"
 #include "common/SteppableClock.hpp"
@@ -80,6 +81,7 @@ class CurveEvaluator {
   std::vector<cvec2f> data_;
 };
 
+// TODO(wcui): Inherit this class to change power estimator behavior.
 class PowerEstimator {
  public:
   PowerEstimator(float acc_thresh = 1.0f, float deacc_thresh = -1.0f):
@@ -98,14 +100,15 @@ class PowerEstimator {
     steady_.setData(x3, y3);
   }
 
-  float estimate(const Kinematics::State& current,
-                 const Kinematics::State& next) {
+  virtual float Estimate(real_T mass, TTimeDelta dt,
+                         const Kinematics::State& current,
+                         const Kinematics::State& next) {
     auto v1 = current.twist.linear.norm(),
          v2 = next.twist.linear.norm();
     auto diff = v2 - v1;
-    if (diff >= acc_thresh_) {
+    if (diff >= acc_thresh_ * dt) {
       return accelerate_.eval(v1);
-    } else if (diff <= deacc_thresh_) {
+    } else if (diff <= deacc_thresh_ * dt) {
       return deaccelerate_.eval(v1);
     } else {
       return steady_.eval(v1);
@@ -117,6 +120,8 @@ class PowerEstimator {
   CurveEvaluator accelerate_, deaccelerate_, steady_;
 };
 
+// TODO(wcui) Inherit this class to change battery behavior, e.g.,
+// volatge-capacity relationship.
 class Battery {
  public:
   Battery(float voltage, float capacity):
