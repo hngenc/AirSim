@@ -165,6 +165,7 @@ void MultiRotorConnector::updateRenderedState()
     last_pose_ = vehicle_.getPose();
     
     collision_response_info = vehicle_.getCollisionResponseInfo();
+    SoC = (int) vehicle_.getStateOfCharge();
     last_debug_pose_ = controller_->getDebugPose();
 
     //update rotor poses
@@ -220,6 +221,8 @@ void MultiRotorConnector::updateRendering(float dt)
     else {
         //UAirBlueprintLib::LogMessage(TEXT("Collison (raw) Count:"), FString::FromInt(collision_response_info.collison_count_raw), LogDebugLevel::Unimportant);
         UAirBlueprintLib::LogMessage(TEXT("Collison Count:"), FString::FromInt(collision_response_info.collison_count_non_resting), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("SoC (%):"), FString::FromInt(SoC), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("Voltage:"), FString::SanitizeFloat(vehicle_.getVotage()), LogDebugLevel::Failure);
     }
 }
 
