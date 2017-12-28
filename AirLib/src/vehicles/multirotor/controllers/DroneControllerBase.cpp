@@ -686,5 +686,14 @@ void DroneControllerBase::setCollisionInfo(const CollisionInfo& collision_info)
     collision_info_ = collision_info;
 }
 
+BatteryInfo DroneControllerBase::getBatteryInfo()
+{
+    return battery_info_;
+}
+void DroneControllerBase::setBatteryInfo(const BatteryInfo& battery_info)
+{
+    battery_info_ = battery_info;
+}
+
 }} //namespace
 #endif
