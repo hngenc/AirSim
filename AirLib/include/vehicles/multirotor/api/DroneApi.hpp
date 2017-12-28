@@ -256,15 +256,15 @@ public:
 #ifdef MAX_FR_MODE
 	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)
 
-	vector<VehicleCameraBase::ImageResponse> create_response(const vector<VehicleCameraBase::ImageRequest>& request) {
+	vector<VehicleCameraBase::ImageResponse> create_response(const vector<VehicleCameraBase::ImageRequest>& request_) {
 		vector<VehicleCameraBase::ImageResponse> response;
 
-		if (request.size() == 0) {
+		if (request_.size() == 0) {
 			return response;
 		}
 		//multi_threaded;
-		const auto item_1 = request[0];
-		const auto item_2 = request[1];
+		const auto item_1 = request_[0];
+		const auto item_2 = request_[1];
 
 		//getCamera_s = steady_clock::now();
 		VehicleCameraBase* camera_1 = vehicle_->getCamera(item_1.camera_id);
@@ -279,7 +279,7 @@ public:
 		response.push_back(item_response_2);
 		/*
 
-		for (const auto& item : request) {
+		for (const auto& item : request_) {
 
 		VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
 		const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
@@ -369,8 +369,8 @@ public:
 
 	virtual vector<uint8_t> simGetImage(uint8_t camera_id, VehicleCameraBase::ImageType image_type) override
     {
-        vector<VehicleCameraBase::ImageRequest> request = { VehicleCameraBase::ImageRequest(camera_id, image_type)};
-        const vector<VehicleCameraBase::ImageResponse>& response = simGetImages(request);
+        vector<VehicleCameraBase::ImageRequest> request_ = { VehicleCameraBase::ImageRequest(camera_id, image_type)};
+        const vector<VehicleCameraBase::ImageResponse>& response = simGetImages(request_);
         if (response.size() > 0)
             return response.at(0).image_data_uint8;
         else 

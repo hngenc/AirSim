@@ -52,8 +52,8 @@ public:
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
         Settings& settings = Settings::singleton();
-        float v = settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE);
-        float c = settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY);
+        float v = float(settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE));
+        float c = float(settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY));
         battery_ = new powerlib::Battery(v, c);
 
         createRotors(*params_, rotors_, environment);

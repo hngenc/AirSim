@@ -21,9 +21,9 @@ namespace powerlib {
 class BatteryFuelGauge {
  public:
   BatteryFuelGauge(): coulombs_(0.0f) {}
-
+  
   void update(TTimeDelta dt, float vol, float power) {
-    coulombs_ += (power / vol) * dt;
+    coulombs_ += float((power / vol) * dt);
   }
 
   float Coulombs() const {
@@ -48,7 +48,7 @@ class CurveEvaluator {
 
   void setData(std::vector<float> &Xs, std::vector<float> &Ys) {
     data_.clear();
-    size_ = std::min(Xs.size(), Ys.size());
+    size_ = int(std::min(Xs.size(), Ys.size()));
     for (int i = 0; i < size_; i++) {
       cvec2f p(Xs[i], Ys[i]);
       data_.push_back(p);
@@ -103,6 +103,8 @@ class PowerEstimator {
   virtual float Estimate(real_T mass, TTimeDelta dt,
                          const Kinematics::State& current,
                          const Kinematics::State& next) {
+	(void)(mass);
+
     auto v1 = current.twist.linear.norm(),
          v2 = next.twist.linear.norm();
     auto diff = v2 - v1;
