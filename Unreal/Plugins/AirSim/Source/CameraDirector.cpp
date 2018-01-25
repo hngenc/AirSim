@@ -1,6 +1,7 @@
 #include "CameraDirector.h"
 #include "AirBlueprintLib.h"
-#include "controllers/Settings.hpp" // MAV-bench
+// MAV-bench
+#include "controllers/Settings.hpp"
 
 ACameraDirector::ACameraDirector()
 {
@@ -18,9 +19,9 @@ ACameraDirector::ACameraDirector()
     SpringArm->bInheritYaw = true;
     SpringArm->bInheritRoll = true;
 
-	// MAV-bench
-	msr::airlib::Settings& settings = msr::airlib::Settings::singleton();
-	gimbal = settings.getBool("gimbal", false);
+    // MAV-bench
+    msr::airlib::Settings& settings = msr::airlib::Settings::singleton();
+    gimbal_ = settings.getBool("gimbal", false);
 }
 
 void ACameraDirector::BeginPlay()
@@ -40,12 +41,13 @@ void ACameraDirector::Tick(float DeltaTime)
     }
     else {
         UAirBlueprintLib::FollowActor(external_camera_, follow_actor_, initial_ground_obs_offset_, ext_obs_fixed_z_);
-		
-		if (gimbal) {
-			APIPCamera * fpv_cam = getFpvCamera();
-			FRotator drone_orientation = follow_actor_->GetActorRotation();
-			fpv_cam->SetActorRotation(FRotator(0, drone_orientation.Yaw, 0));
-		}
+
+        // MAV-bench
+        if (gimbal_) {
+            APIPCamera * fpv_cam = getFpvCamera();
+            FRotator drone_orientation = follow_actor_->GetActorRotation();
+            fpv_cam->SetActorRotation(FRotator(0, drone_orientation.Yaw, 0));
+        }
     }
 }
 

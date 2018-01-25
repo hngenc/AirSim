@@ -69,6 +69,7 @@ private:
     void setupInputBindings();
     void attachSpringArm(bool attach);
     void disableNonExternalCameras();
+    // void ACameraDirector::restart_level();
 
 
 private:
@@ -82,8 +83,6 @@ private:
     ECameraDirectorMode mode_;
     UPROPERTY() UManualPoseController* manual_pose_controller_;
 
-	void ACameraDirector::restart_level();
-
     FVector camera_start_location_;
     FVector initial_ground_obs_offset_;
     FRotator camera_start_rotation_;
@@ -93,6 +92,6 @@ private:
     int fpv_camera_index_;
     int backup_camera_index_ = -1;
 
-	// MAV-bench
-	bool gimbal;
+    // MAV-bench
+    bool gimbal_ = false;
 };
