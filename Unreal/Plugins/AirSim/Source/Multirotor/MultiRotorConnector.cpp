@@ -187,10 +187,10 @@ void MultiRotorConnector::updateRenderedState()
 void MultiRotorConnector::report_stats(std::string stat_file_name){
         std::ofstream stat_file;
         stat_file.open(stat_file_name, std::ios_base::app);    
-	SoC = (int) vehicle_.getStateOfCharge();
-        
-	stat_file << SoC << std::endl;
-        stat_file.close();
+        stat_file << "state of charge:" << (int)vehicle_.getStateOfCharge() <<std::endl;
+		FString number_of_collisions = FString::FromInt(collision_response_info.collison_count_non_resting) ;
+		stat_file << "number of collisions:" << std::string(TCHAR_TO_UTF8(*number_of_collisions)) << std::endl;
+		stat_file.close();
    //return SoC;
 }
 

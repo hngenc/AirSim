@@ -26,7 +26,8 @@ public:
     virtual bool isApiServerStarted() = 0;
     virtual VehicleControllerBase* getController() = 0;
     virtual VehicleCameraBase* getCamera(unsigned int index) = 0;
-    virtual void setPose(const Pose& pose, bool ignore_collison) = 0;
+	virtual void report_stats(std::string) = 0;
+	virtual void setPose(const Pose& pose, bool ignore_collison) = 0;
     virtual Pose getPose() = 0;
 };
 

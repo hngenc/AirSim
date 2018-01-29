@@ -57,8 +57,6 @@ void ASimModeWorldBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 	std::string stat_file_name_converted = std::string(TCHAR_TO_UTF8(*stat_file_name));
 	for (auto& vehicle : vehicles_)
 		vehicle->report_stats((std::string) stat_file_name_converted);
-
-		//vehicle->report_stats("C:\\AirSim\\ok.txt");
 	
     physics_world_.reset();
     physics_engine_.reset();

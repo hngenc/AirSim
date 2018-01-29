@@ -5,7 +5,7 @@
 #define air_RealMultirotorConnector_hpp
 
 #include "controllers/VehicleConnectorBase.hpp"
-
+#include <iostream>
 namespace msr { namespace airlib {
 
 class RealMultirotorConnector : public VehicleConnectorBase
@@ -32,6 +32,9 @@ public:
     {
     }
 
+    virtual void report_stats(std::string) 
+    {
+    }
     virtual bool isApiServerStarted() override
     {
         return false;
