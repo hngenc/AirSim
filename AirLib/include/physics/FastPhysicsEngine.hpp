@@ -95,10 +95,13 @@ private:
         //    VectorMath::toString(next.twist.linear).c_str(), clock()->getStepCount()));
 
         // wcui: Update battery stats of the physical body
-        if (body.hasBattery()) {
+        if (body.hasBattery()) { //only intrested in bodies with electrical constraints
           auto P = p_estimator_.Estimate(body.getMass(), dt, current, next);
           body.getBattery()->update(dt, P);
-        }
+		  body.updateDistanceTraveled(current.pose);
+		  body.updateEnergyConsumed(P*dt);
+		  body.updateTime(dt);
+		}
 
         body.setKinematics(next);
         body.setWrench(next_wrench);
@@ -410,7 +413,8 @@ private:
     std::stringstream debug_string_;
     int grounded_;
     bool enable_ground_lock_;
-    powerlib::PowerEstimator p_estimator_;
+	powerlib::PowerEstimator p_estimator_;
+		
 
 };
 

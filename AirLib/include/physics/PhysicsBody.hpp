@@ -13,7 +13,7 @@
 #include "Environment.hpp"
 #include <unordered_set>
 #include <exception>
-
+#include <cmath>
 namespace msr { namespace airlib {
 
 class PhysicsBody : public UpdatableObject {
@@ -76,7 +76,8 @@ public: //methods
         inertia_ = inertia;
         inertia_inv_ = inertia_.inverse();
         environment_ = environment;
-    }
+
+	}
 
     //enable physics body detection
     virtual UpdatableObject* getPhysicsBody() override
@@ -106,15 +107,36 @@ public: //methods
             getDragVertex(vertex_index).reset();
         }
     }
+	
+	virtual void updateTime(TTimeDelta dt) {
+		total_time_since_creation_ += dt;
+	}
+	virtual void updateDistanceTraveled(Pose cur_pose) {
+		if (distance_traveled_ == -1) { //first value
+			distance_traveled_ = 0;
+			last_pose_ = cur_pose;
+		}
+		
+		double distance_traveled_temp = sqrt(pow((cur_pose.position - last_pose_.position)[0],2) + pow((cur_pose.position - last_pose_.position)[1],2) + pow((cur_pose.position - last_pose_.position)[2],2));
+		
+		if (distance_traveled_temp > distance_traveled_quanta_) { //only update if greater than certain threshold cause otherwise the error accumulates
+			distance_traveled_ += distance_traveled_temp;
+			last_pose_ = cur_pose;
+		}
+	}
+   
+	virtual void updateEnergyConsumed(double inst_energy) {
+		energy_consumed_ += inst_energy;
+	}
 
-    virtual void update() override
+	virtual void update() override
     {
         UpdatableObject::update();
 
         //update position from kinematics so we have latest position after physics update
         environment_->setPosition(getKinematics().pose.position);
         environment_->update();
-
+		//update_distance_traveled(getKinematics().pose);
         kinematics_.update();
 
         //update individual vertices
@@ -227,8 +249,23 @@ public: //methods
     bool hasBattery() const { return battery_ != nullptr; }
 
     powerlib::Battery *getBattery() { return battery_; }
+	
+	double getDistanceTraveled() const
+	{
+		return distance_traveled_;
+	}
 
-    float getStateOfCharge() const
+	double getEnergyConsumed() const
+	{
+		return energy_consumed_;
+	}
+
+	double getTotalTime() const
+	{
+		return total_time_since_creation_;
+	}
+
+	float getStateOfCharge() const
     {
         if (battery_ != nullptr) {
             return battery_->StateOfCharge();
@@ -270,7 +307,12 @@ public:
 
 private:
     real_T mass_, mass_inv_;
-    Matrix3x3r inertia_, inertia_inv_;
+	TTimeDelta total_time_since_creation_ = 0;
+	Pose last_pose_; 
+	double distance_traveled_ = -1;
+	double distance_traveled_quanta_ = .1; //the smallest amount that would be accumulated to the distance traveled. This is set to cancel the accumulated error
+	double energy_consumed_ = 0;
+	Matrix3x3r inertia_, inertia_inv_;
 
     Kinematics kinematics_;
 
