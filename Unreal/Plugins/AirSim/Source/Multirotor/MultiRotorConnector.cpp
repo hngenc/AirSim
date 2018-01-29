@@ -184,6 +184,16 @@ void MultiRotorConnector::updateRenderedState()
         controller_->setRCData(getRCData());
 }
 
+void MultiRotorConnector::report_stats(std::string stat_file_name){
+        std::ofstream stat_file;
+        stat_file.open(stat_file_name, std::ios_base::app);    
+	SoC = (int) vehicle_.getStateOfCharge();
+        
+	stat_file << SoC << std::endl;
+        stat_file.close();
+   //return SoC;
+}
+
 void MultiRotorConnector::updateRendering(float dt)
 {
     try {

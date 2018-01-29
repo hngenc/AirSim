@@ -15,7 +15,7 @@
 #include <chrono>
 #include "api/ControlServerBase.hpp"
 #include "SimJoyStick/SimJoyStick.h"
-
+#include <string>
 class MultiRotorConnector : public msr::airlib::VehicleConnectorBase
 {
 public:
@@ -55,7 +55,7 @@ public:
     virtual Pose getPose() override;
 
     virtual msr::airlib::VehicleCameraBase* getCamera(unsigned int index = 0) override;
-
+    void report_stats(std::string);
 private:
     void detectUsbRc();
     static float joyStickToRC(int16_t val);
