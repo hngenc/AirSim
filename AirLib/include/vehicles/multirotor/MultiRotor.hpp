@@ -8,10 +8,18 @@
 #include "common/CommonStructs.hpp"
 #include "Rotor.hpp"
 #include "controllers/ControllerBase.hpp"
+#include "controllers/Settings.hpp"
 #include "MultiRotorParams.hpp"
 #include <vector>
 #include "physics/PhysicsBody.hpp"
 
+#ifndef DEFAULT_VOLTAGE
+#define DEFAULT_VOLTAGE (11.1f)
+#endif  // DEFAULT_VOLTAGE
+
+#ifndef DEFAULT_CAPACITY
+#define DEFAULT_CAPACITY (5.5f)
+#endif  // DEFAULT_CAPACITY
 
 namespace msr { namespace airlib {
 
@@ -43,6 +51,10 @@ public:
         params_ = params;
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
+        Settings& settings = Settings::singleton();
+        float v = float(settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE));
+        float c = float(settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY));
+        battery_ = new powerlib::Battery(v, c);
 
         createRotors(*params_, rotors_, environment);
         createDragVertices();
@@ -69,6 +81,11 @@ public:
 
         //reset sensors last after their ground truth has been reset
         resetSensors();
+
+        // reset battery
+        if (battery_ != nullptr) {
+            battery_->reset();
+        }
     }
 
     virtual void update() override
@@ -107,6 +124,14 @@ public:
         for (uint rotor_index = 0; rotor_index < rotors_.size(); ++rotor_index) {
             rotors_.at(rotor_index).setControlSignal(
                 getController()->getVertexControlSignal(rotor_index));
+        }
+
+        // wcui: update battery info after kinematics is updated
+        if (battery_ != nullptr) {
+            BatteryInfo battery_info;
+            battery_info.state_of_charge = battery_->StateOfCharge();
+            battery_info.voltage = battery_->Voltage();
+            getController()->setBatteryInfo(battery_info);
         }
     }
 
