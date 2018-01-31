@@ -237,8 +237,8 @@ class AirSimClientBase:
         with open(filename, 'wb') as afile:
             afile.write(bstr)
 
-    def simSetPose(self, pose, ignore_collision):
-        self.client.call('simSetPose', pose, ignore_collision)
+    def simSetPose(self, pose, ignore_collison):
+        self.client.call('simSetPose', pose, ignore_collison)
 
     def simGetPose(self):
         return self.client.call('simGetPose')
