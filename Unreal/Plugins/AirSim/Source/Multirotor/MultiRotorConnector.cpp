@@ -235,10 +235,9 @@ void MultiRotorConnector::updateRendering(float dt)
     }
     else {
         //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response_info.collision_count_raw), LogDebugLevel::Unimportant);
-        UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), FString::FromInt(collision_response_info.collision_count_non_resting), LogDebugLevel::Failure);UAirBlueprintLib::LogMessage(TEXT("SoC (%):"), FString::FromInt(SoC), LogDebugLevel::Failure);
         UAirBlueprintLib::LogMessage(TEXT("Voltage:"), FString::SanitizeFloat(vehicle_.getVotage()), LogDebugLevel::Failure);
-   
-	}
+        UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), FString::FromInt(collision_response_info.collision_count_non_resting), LogDebugLevel::Failure);
+    }
 }
 
 void MultiRotorConnector::setPose(const Pose& pose, bool ignore_collision)

@@ -89,6 +89,7 @@ private:
     unsigned int rotor_count_;
     std::vector<RotorInfo> rotor_info_;
     int SoC;
+
     CollisionResponseInfo collision_response_info;
 
     bool enable_rpc_;

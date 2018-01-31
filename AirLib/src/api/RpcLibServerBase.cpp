@@ -78,8 +78,21 @@ RpcLibServerBase::RpcLibServerBase(VehicleApiBase* vehicle, string server_addres
             RpcLibAdapatorsBase::Pose { return vehicle_->simGetPose();
     });
 
+    pimpl_->server.
+        bind("simSetSegmentationObjectID", [&](const std::string& mesh_name, int object_id, bool is_name_regex) -> bool {
+        return vehicle_->simSetSegmentationObjectID(mesh_name, object_id, is_name_regex);
+    });
+    pimpl_->server.
+        bind("simGetSegmentationObjectID", [&](const std::string& mesh_name) -> int {
+        return vehicle_->simGetSegmentationObjectID(mesh_name);
+    });    
+
     pimpl_->server.bind("reset", [&]() -> void {
         vehicle_->reset();
+    });
+
+    pimpl_->server.bind("simPrintLogMessage", [&](const std::string& message, std::string message_param, unsigned char severity) -> void {
+        vehicle_->simPrintLogMessage(message, message_param, severity);
     });
 
     pimpl_->server.bind("getHomeGeoPoint", [&]() -> RpcLibAdapatorsBase::GeoPoint {
@@ -88,6 +101,8 @@ RpcLibServerBase::RpcLibServerBase(VehicleApiBase* vehicle, string server_addres
 
     pimpl_->server.bind("enableApiControl", [&](bool is_enabled) -> void { vehicle_->enableApiControl(is_enabled); });
     pimpl_->server.bind("isApiControlEnabled", [&]() -> bool { return vehicle_->isApiControlEnabled(); });
+
+    pimpl_->server.bind("getCollisionInfo", [&]() -> RpcLibAdapatorsBase::CollisionInfo { return vehicle_->getCollisionInfo(); });
 
     pimpl_->server.suppress_exceptions(true);
 }

@@ -196,7 +196,19 @@ public:
     }
 
 
-
+/*
+    virtual bool simSetSegmentationObjectID(const std::string& mesh_name, int object_id,
+        bool is_name_regex) override
+    {
+        return vehicle_->setSegmentationObjectID(mesh_name, object_id, is_name_regex);
+    }
+*/
+/*
+    virtual int simGetSegmentationObjectID(const std::string& mesh_name) override
+    {
+        return vehicle_->getSegmentationObjectID(mesh_name);
+    }
+*/
     Quaternionr getOrientation()
     {
         return controller_->getOrientation();
@@ -206,7 +218,8 @@ public:
         return controller_->getLandedState();
     }
 
-    CollisionInfo getCollisionInfo()
+
+    virtual CollisionInfo getCollisionInfo() override
     {
         return controller_->getCollisionInfo();
     }
@@ -289,8 +302,6 @@ public:
     {
         vehicle_->printLogMessage(message, message_param, severity);
     }
-
-
 
     virtual bool isApiControlEnabled() override
     {

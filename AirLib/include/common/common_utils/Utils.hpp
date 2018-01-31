@@ -123,8 +123,6 @@ public:
         return s.size() <= prefix.size() && s.compare(0, prefix.size(), prefix) == 0;
     }
 
-
-
     static Logger* getSetLogger(Logger* logger = nullptr)
     {
         static Logger logger_default_;

@@ -13,7 +13,6 @@
 #include "Environment.hpp"
 #include <unordered_set>
 #include <exception>
-
 namespace msr { namespace airlib {
 
 class PhysicsBody : public UpdatableObject {
@@ -288,3 +287,4 @@ protected:
 
 }} //namespace
 #endif
+
