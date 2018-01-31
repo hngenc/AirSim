@@ -25,7 +25,7 @@ public:
     vector<uint8_t> simGetImage(int camera_id, VehicleCameraBase::ImageType type);
     msr::airlib::GeoPoint getHomeGeoPoint();
 
-    void simSetPose(const Pose& pose, bool ignore_collison);
+    void simSetPose(const Pose& pose, bool ignore_collision);
     Pose simGetPose();
 
     void confirmConnection();

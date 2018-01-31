@@ -75,9 +75,9 @@ bool RpcLibClientBase::isApiControlEnabled()
 }
 
 //sim only
-void RpcLibClientBase::simSetPose(const Pose& pose, bool ignore_collison)
+void RpcLibClientBase::simSetPose(const Pose& pose, bool ignore_collision)
 {
-    pimpl_->client.call("simSetPose", RpcLibAdapatorsBase::Pose(pose), ignore_collison);
+    pimpl_->client.call("simSetPose", RpcLibAdapatorsBase::Pose(pose), ignore_collision);
 }
 Pose RpcLibClientBase::simGetPose()
 {

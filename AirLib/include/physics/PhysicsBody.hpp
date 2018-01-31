@@ -52,9 +52,9 @@ public: //interface
         unused(index);
         throw std::out_of_range("no physics vertex are available");
     }
-    virtual void setCollisionInfo(const CollisionInfo& collison_info)
+    virtual void setCollisionInfo(const CollisionInfo& collision_info)
     {
-        collison_info_ = collison_info;
+        collision_info_ = collision_info;
     }
 
 public: //methods
@@ -95,8 +95,8 @@ public: //methods
         if (environment_)
             environment_->reset();
         wrench_ = Wrench::zero();
-        collison_info_ = CollisionInfo();
-        collison_response_info_ = CollisonResponseInfo();
+        collision_info_ = CollisionInfo();
+        collision_response_info_ = CollisionResponseInfo();
 
         //update individual vertices
         for (uint vertex_index = 0; vertex_index < wrenchVertexCount(); ++vertex_index) {
@@ -212,16 +212,16 @@ public: //methods
     }
     const CollisionInfo& getCollisionInfo() const
     {
-        return collison_info_;
+        return collision_info_;
     }
 
-    const CollisonResponseInfo& getCollisionResponseInfo() const
+    const CollisionResponseInfo& getCollisionResponseInfo() const
     {
-        return collison_response_info_;
+        return collision_response_info_;
     }
-    CollisonResponseInfo& getCollisionResponseInfo()
+    CollisionResponseInfo& getCollisionResponseInfo()
     {
-        return collison_response_info_;
+        return collision_response_info_;
     }
 
     bool hasBattery() const { return battery_ != nullptr; }
@@ -277,8 +277,8 @@ private:
     //force is in world frame but torque is not
     Wrench wrench_;
 
-    CollisionInfo collison_info_;
-    CollisonResponseInfo collison_response_info_;
+    CollisionInfo collision_info_;
+    CollisionResponseInfo collision_response_info_;
 
     Environment* environment_ = nullptr;
 
