@@ -52,9 +52,9 @@ public: //interface
         unused(index);
         throw std::out_of_range("no physics vertex are available");
     }
-    virtual void setCollisionInfo(const CollisionInfo& collison_info)
+    virtual void setCollisionInfo(const CollisionInfo& collision_info)
     {
-        collison_info_ = collison_info;
+        collision_info_ = collision_info;
     }
 
 public: //methods
@@ -96,8 +96,8 @@ public: //methods
         if (environment_)
             environment_->reset();
         wrench_ = Wrench::zero();
-        collison_info_ = CollisionInfo();
-        collison_response_info_ = CollisonResponseInfo();
+        collision_info_ = CollisionInfo();
+        collision_response_info_ = CollisionResponseInfo();
 
         //update individual vertices
         for (uint vertex_index = 0; vertex_index < wrenchVertexCount(); ++vertex_index) {
@@ -107,7 +107,6 @@ public: //methods
             getDragVertex(vertex_index).reset();
         }
     }
-	
 	virtual void updateTime(TTimeDelta dt) {
 		total_time_since_creation_ += dt;
 	}
@@ -234,37 +233,22 @@ public: //methods
     }
     const CollisionInfo& getCollisionInfo() const
     {
-        return collison_info_;
+        return collision_info_;
     }
 
-    const CollisonResponseInfo& getCollisionResponseInfo() const
+    const CollisionResponseInfo& getCollisionResponseInfo() const
     {
-        return collison_response_info_;
+        return collision_response_info_;
     }
-    CollisonResponseInfo& getCollisionResponseInfo()
+    CollisionResponseInfo& getCollisionResponseInfo()
     {
-        return collison_response_info_;
+        return collision_response_info_;
     }
 
     bool hasBattery() const { return battery_ != nullptr; }
 
     powerlib::Battery *getBattery() { return battery_; }
 	
-	double getDistanceTraveled() const
-	{
-		return distance_traveled_;
-	}
-
-	double getEnergyConsumed() const
-	{
-		return energy_consumed_;
-	}
-
-	double getTotalTime() const
-	{
-		return total_time_since_creation_;
-	}
-
 	float getStateOfCharge() const
     {
         if (battery_ != nullptr) {
@@ -301,6 +285,22 @@ public: //methods
         }
     }
 
+	double getDistanceTraveled() const
+	{
+		return distance_traveled_;
+	}
+
+	double getEnergyConsumed() const
+	{
+		return energy_consumed_;
+	}
+
+	double getTotalTime() const
+	{
+		return total_time_since_creation_;
+	}
+
+
 public:
     //for use in physics angine: //TODO: use getter/setter or friend method?
     TTimePoint last_kinematics_time;
@@ -314,13 +314,14 @@ private:
 	double energy_consumed_ = 0;
 	Matrix3x3r inertia_, inertia_inv_;
 
+
     Kinematics kinematics_;
 
     //force is in world frame but torque is not
     Wrench wrench_;
 
-    CollisionInfo collison_info_;
-    CollisonResponseInfo collison_response_info_;
+    CollisionInfo collision_info_;
+    CollisionResponseInfo collision_response_info_;
 
     Environment* environment_ = nullptr;
 
@@ -330,3 +331,4 @@ protected:
 
 }} //namespace
 #endif
+

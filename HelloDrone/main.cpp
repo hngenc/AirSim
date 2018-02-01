@@ -20,7 +20,7 @@ int main()
 {
     using namespace msr::airlib;
 
-    msr::airlib::MultirotorRpcLibClient client("10.157.90.62");
+    msr::airlib::MultirotorRpcLibClient client;
     typedef VehicleCameraBase::ImageRequest ImageRequest;
     typedef VehicleCameraBase::ImageResponse ImageResponse;
     typedef VehicleCameraBase::ImageType ImageType;

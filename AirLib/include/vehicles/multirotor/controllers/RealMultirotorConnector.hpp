@@ -16,12 +16,14 @@ public:
     {
     }
 
-    virtual void updateRenderedState() override
+    virtual void updateRenderedState(float dt) override
     {
+        unused(dt);
     }
 
     virtual void updateRendering(float dt) override
     {
+        unused(dt);
     }
 
     virtual void startApiServer() override
@@ -31,10 +33,10 @@ public:
     virtual void stopApiServer() override
     {
     }
-
-    virtual void report_stats(std::string) 
+ virtual void report_stats(std::string) 
     {
     }
+    
     virtual bool isApiServerStarted() override
     {
         return false;
@@ -51,7 +53,7 @@ public:
         throw std::logic_error("getCamera() call is only supported for simulation");
     }
 
-    virtual void setPose(const Pose& pose, bool ignore_collison) override
+    virtual void setPose(const Pose& pose, bool ignore_collision) override
     {
         throw std::logic_error("setPose() call is only supported for simulation");
     }
@@ -60,6 +62,18 @@ public:
     {
         throw std::logic_error("getPose() call is only supported for simulation");
     }
+
+    virtual bool setSegmentationObjectID(const std::string& mesh_name, int object_id,
+        bool is_name_regex = false) override
+    {
+        throw std::logic_error("setSegmentationObjectID() call is only supported for simulation");
+    }
+    virtual int getSegmentationObjectID(const std::string& mesh_name) override
+    {
+        throw std::logic_error("getSegmentationObjectID() call is only supported for simulation");
+    }
+     virtual void printLogMessage(const std::string& message, std::string message_param, unsigned char severity) { } 
+
 
 private:
     VehicleControllerBase* controller_;

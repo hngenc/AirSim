@@ -65,6 +65,14 @@ RpcLibClientBase::ConnectionState RpcLibClientBase::getConnectionState()
         return ConnectionState::Unknown;
     }
 }
+bool RpcLibClientBase::simSetSegmentationObjectID(const std::string& mesh_name, int object_id, bool is_name_regex)
+{
+    return pimpl_->client.call("simSetSegmentationObjectID", mesh_name, object_id, is_name_regex).as<bool>();
+}
+int RpcLibClientBase::simGetSegmentationObjectID(const std::string& mesh_name)
+{
+    return pimpl_->client.call("simGetSegmentationObjectID", mesh_name).as<int>();
+}
 void RpcLibClientBase::enableApiControl(bool is_enabled)
 {
     pimpl_->client.call("enableApiControl", is_enabled);
@@ -75,9 +83,9 @@ bool RpcLibClientBase::isApiControlEnabled()
 }
 
 //sim only
-void RpcLibClientBase::simSetPose(const Pose& pose, bool ignore_collison)
+void RpcLibClientBase::simSetPose(const Pose& pose, bool ignore_collision)
 {
-    pimpl_->client.call("simSetPose", RpcLibAdapatorsBase::Pose(pose), ignore_collison);
+    pimpl_->client.call("simSetPose", RpcLibAdapatorsBase::Pose(pose), ignore_collision);
 }
 Pose RpcLibClientBase::simGetPose()
 {
@@ -100,6 +108,12 @@ vector<uint8_t> RpcLibClientBase::simGetImage(int camera_id, VehicleCameraBase::
     }
     return result;
 }
+
+void RpcLibClientBase::simPrintLogMessage(const std::string& message, std::string message_param, unsigned char  severity)
+{
+    pimpl_->client.call("simPrintLogMessage", message, message_param, severity);
+}
+
 
 msr::airlib::GeoPoint RpcLibClientBase::getHomeGeoPoint()
 {
@@ -133,6 +147,12 @@ void RpcLibClientBase::confirmConnection()
 void* RpcLibClientBase::getClient()
 {
     return &pimpl_->client;
+}
+
+
+CollisionInfo RpcLibClientBase::getCollisionInfo()
+{
+    return pimpl_->client.call("getCollisionInfo").as<RpcLibAdapatorsBase::CollisionInfo>().to();
 }
 
 

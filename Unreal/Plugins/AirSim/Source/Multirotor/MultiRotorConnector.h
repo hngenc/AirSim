@@ -16,6 +16,7 @@
 #include "api/ControlServerBase.hpp"
 #include "SimJoyStick/SimJoyStick.h"
 #include <string>
+#include <future>
 class MultiRotorConnector : public msr::airlib::VehicleConnectorBase
 {
 public:
@@ -36,7 +37,7 @@ public:
     MultiRotorConnector(VehiclePawnWrapper* vehicle_paw_wrapper, msr::airlib::MultiRotorParams* vehicle_params, 
         bool enable_rpc, std::string api_server_address, uint16_t api_server_port,
         UManualPoseController* manual_pose_controller);
-    virtual void updateRenderedState() override;
+    virtual void updateRenderedState(float dt) override;
     virtual void updateRendering(float dt) override;
 
     virtual void startApiServer() override;
@@ -51,15 +52,23 @@ public:
     virtual void reportState(StateReporter& reporter) override;
     virtual UpdatableObject* getPhysicsBody() override;
 
-    virtual void setPose(const Pose& pose, bool ignore_collison) override;
+    virtual void setPose(const Pose& pose, bool ignore_collision) override;
     virtual Pose getPose() override;
+
+    virtual bool setSegmentationObjectID(const std::string& mesh_name, int object_id,
+        bool is_name_regex = false) override;
+    virtual int getSegmentationObjectID(const std::string& mesh_name) override;
 
     virtual msr::airlib::VehicleCameraBase* getCamera(unsigned int index = 0) override;
     void report_stats(std::string);
+
+    virtual void printLogMessage(const std::string& message, std::string message_param = "", unsigned char severity = 0) override;
+
+
 private:
     void detectUsbRc();
-    static float joyStickToRC(int16_t val);
-    const msr::airlib::RCData& getRCData();
+    const msr::airlib::RCData& getRCData();  
+    void resetPrivate();
 
 private:
     MultiRotor vehicle_;
@@ -79,10 +88,9 @@ private:
     };
     unsigned int rotor_count_;
     std::vector<RotorInfo> rotor_info_;
-
-    CollisonResponseInfo collision_response_info;
-
     int SoC;
+
+    CollisionResponseInfo collision_response_info;
 
     bool enable_rpc_;
     std::string api_server_address_;
@@ -99,6 +107,11 @@ private:
         NonePending, RenderStatePending, RenderPending
     } pending_pose_status_;
     Pose pending_pose_; //force new pose through API
+
+    //reset must happen while World is locked so its async task initiated from API thread
+    bool reset_pending_;
+    std::packaged_task<void()> reset_task_;
+
     Pose last_pose_; //for trace lines showing vehicle path
     Pose last_debug_pose_; //for purposes such as comparing recorded trajectory
 };
