@@ -64,6 +64,7 @@ public:
 
     virtual void printLogMessage(const std::string& message, std::string message_param = "", unsigned char severity = 0) override;
 
+    virtual void report_stats(std::string);
 
 private:
     void detectUsbRc();

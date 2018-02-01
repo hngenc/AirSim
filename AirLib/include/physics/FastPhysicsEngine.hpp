@@ -98,6 +98,10 @@ private:
         if (body.hasBattery()) {
           auto P = p_estimator_.Estimate(body.getMass(), dt, current, next);
           body.getBattery()->update(dt, P);
+          body.updateDistanceTraveled(current.pose);
+		  body.updateEnergyConsumed(P*dt);
+	      body.updateTime(dt);
+
         }
 
         body.setKinematics(next);

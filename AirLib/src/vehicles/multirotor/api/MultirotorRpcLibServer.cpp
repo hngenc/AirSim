@@ -107,8 +107,9 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(DroneApi* drone, string server_ad
         bind("isSimulationMode", [&]() -> bool { return getDroneApi()->isSimulationMode(); });
     (static_cast<rpc::server*>(getServer()))->
         bind("getServerDebugInfo", [&]() -> std::string { return getDroneApi()->getServerDebugInfo(); });
+   /* 
     (static_cast<rpc::server*>(getServer()))->
-        bind("getCollisionInfo", [&]() -> MultirotorRpcLibAdapators::CollisionInfo { return getDroneApi()->getCollisionInfo(); });
+        bind("getCollisionInfo", [&]() -> MultirotorRpcLibAdapators::CollisionInfo { return getDroneApi()->getCollisionInfo(); });*/
     (static_cast<rpc::server*>(getServer()))->
         bind("getStateOfCharge", [&]() -> float { return getDroneApi()->getBatteryInfo().state_of_charge; });
     (static_cast<rpc::server*>(getServer()))->

@@ -43,7 +43,7 @@ public:
 
   
     Vector3r getPosition();
-    CollisionInfo getCollisionInfo();
+    //CollisionInfo getCollisionInfo();
     float getStateOfCharge();
     float getVoltage();
     Vector3r getVelocity();

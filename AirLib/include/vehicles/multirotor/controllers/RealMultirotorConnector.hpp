@@ -33,6 +33,10 @@ public:
     virtual void stopApiServer() override
     {
     }
+ virtual void report_stats(std::string) 
+    {
+    }
+
 
     virtual bool isApiServerStarted() override
     {

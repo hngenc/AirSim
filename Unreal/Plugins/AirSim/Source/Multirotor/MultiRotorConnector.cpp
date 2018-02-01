@@ -192,6 +192,20 @@ void MultiRotorConnector::updateRenderedState(float dt)
     if (controller_->getRemoteControlID() >= 0)
         controller_->setRCData(getRCData());
 }
+void MultiRotorConnector::report_stats(std::string stat_file_name){
+        std::ofstream stat_file;
+        stat_file.open(stat_file_name, std::ios_base::app);    
+		stat_file << "Total Flight Time(sec):" << vehicle_.getTotalTime() << std::endl;
+		stat_file << "Distance Traveled(m):" << vehicle_.getDistanceTraveled() << std::endl;
+		//FString number_of_collisions = FString::FromInt(collision_response_info.collison_count_non_resting);
+		//stat_file << "number of collisions:" << std::string(TCHAR_TO_UTF8(*number_of_collisions)) << std::endl;
+		stat_file << "Energy Consumed(?j):" << vehicle_.getEnergyConsumed() << std::endl;
+		stat_file << "state of charge:%" << (int)vehicle_.getStateOfCharge() <<std::endl;
+		
+		stat_file.close();
+   //return SoC;
+}
+
 
 void MultiRotorConnector::updateRendering(float dt)
 {
