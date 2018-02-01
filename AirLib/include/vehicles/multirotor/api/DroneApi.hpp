@@ -276,6 +276,8 @@ public:
         controller_->enableApiControl(is_enabled);
     }
 
+    
+    /*
     virtual vector<VehicleCameraBase::ImageResponse> simGetImages(const vector<VehicleCameraBase::ImageRequest>& request) override
     {
         vector<VehicleCameraBase::ImageResponse> response;
@@ -288,6 +290,118 @@ public:
 
         return response;
     }
+   */
+    
+#define MAX_FR_MODE
+//#define MULTI_THREADED
+#ifdef MAX_FR_MODE
+	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)
+	vector<VehicleCameraBase::ImageResponse> create_response(const vector<VehicleCameraBase::ImageRequest>& request_in) {
+		vector<VehicleCameraBase::ImageResponse> response;
+
+		if (request_in.size() == 0) {
+			return response;
+		}
+		//multi_threaded;
+		const auto item_1 = request_in[0];
+		const auto item_2 = request_in[1];
+
+		//getCamera_s = steady_clock::now();
+		VehicleCameraBase* camera_1 = vehicle_->getCamera(item_1.camera_id);
+		auto f_1 = async(std::launch::async, &VehicleCameraBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
+		VehicleCameraBase* camera_2 = vehicle_->getCamera(item_2.camera_id);
+		auto f_2 = async(std::launch::async, &VehicleCameraBase::getImage, camera_2, item_2.image_type, item_2.pixels_as_float, item_2.compress);
+
+		const auto& item_response_2 = f_2.get();
+
+		const auto& item_response_1 = f_1.get();
+		response.push_back(item_response_1);
+		response.push_back(item_response_2);
+		/*
+		for (const auto& item : request_in) {
+		VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
+		const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
+		response.push_back(item_response);
+		}
+		*/
+		return response;
+
+	}
+
+	virtual vector<VehicleCameraBase::ImageResponse> simGetImages(const vector<VehicleCameraBase::ImageRequest>& request_new) override
+	{
+		//auto f_1 = async(std::launch::async, &VehicleCameraBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
+		vector<VehicleCameraBase::ImageResponse> response;
+		 //this is an empty request, so we have declated f_3
+		if (this->req_ctr == 0) {
+			this->req_ctr++;
+			this->f_3.get();
+			this->request_ = request_new;
+			this->f_3 = async(std::launch::async, &DroneApi::create_response, this, this->request_);
+			return response;
+		}
+
+		response = this->f_3.get();
+		this->request_ = request_new;
+		this->f_3 = async(std::launch::async, &DroneApi::create_response, this, this->request_);
+		return response;
+	}
+
+#else
+	virtual vector<VehicleCameraBase::ImageResponse> simGetImages(const vector<VehicleCameraBase::ImageRequest>& request_in) override
+    {
+		steady_clock::time_point simGetImage_s;
+		steady_clock::time_point simGetImage_e;
+		steady_clock::time_point getImage_s;
+		steady_clock::time_point getImage_e;
+		steady_clock::time_point getCamera_s;
+		steady_clock::time_point getCamera_e;
+
+		simGetImage_s= steady_clock::now();
+		std::ofstream blah_file;
+		blah_file.open("C:\\AirSim\\simGet_time.txt", std::ios_base::app);
+
+		vector<VehicleCameraBase::ImageResponse> response;
+
+#ifdef MULTI_THREADED
+		//multi_threaded;
+
+		const auto item_1 = request_in[0];
+		const auto item_2 = request_in[1];
+
+		//getCamera_s = steady_clock::now();
+		VehicleCameraBase* camera_1 = vehicle_->getCamera(item_1.camera_id);
+		auto f_1 = async(std::launch::async, &VehicleCameraBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
+		VehicleCameraBase* camera_2 = vehicle_->getCamera(item_2.camera_id);
+		auto f_2 = async(std::launch::async, &VehicleCameraBase::getImage, camera_2, item_2.image_type, item_2.pixels_as_float, item_2.compress);
+
+		const auto& item_response_2 = f_2.get();
+
+		const auto& item_response_1 = f_1.get();
+		response.push_back(item_response_1);
+		response.push_back(item_response_2);
+#else
+		for (const auto& item : request_in) {
+
+			VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
+			const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
+			response.push_back(item_response);
+		}
+
+#endif  // MULTI_THREADED
+		simGetImage_e = steady_clock::now();
+		auto simGetImage_dur = duration_cast<milliseconds>(simGetImage_e - simGetImage_s).count();
+		blah_file << "simGetDur:" << simGetImage_dur << std::endl;
+		blah_file << std::endl;
+		blah_file.close();
+
+		//request = request_new;
+		return response;
+    }
+#endif  // MAX_FR_MODE
+
+
+    
     virtual vector<uint8_t> simGetImage(uint8_t camera_id, VehicleCameraBase::ImageType image_type) override
     {
         vector<VehicleCameraBase::ImageRequest> request = { VehicleCameraBase::ImageRequest(camera_id, image_type)};
@@ -577,6 +691,11 @@ private: //vars
     std::mutex action_mutex_;
     std::mutex cancel_mutex_;
     std::shared_ptr<CancelableBase> pending_;
+    int req_ctr;
+    vector<VehicleCameraBase::ImageRequest> request_;
+#if defined(MAX_FR_MODE) || defined(MULTI_THREADED)
+     std::future<vector<VehicleCameraBase::ImageResponse>> f_3 = async(std::launch::async, &DroneApi::create_response, this, request_);
+#endif
 
 };
 
