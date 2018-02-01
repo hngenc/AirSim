@@ -128,10 +128,13 @@ public:
 
         // wcui: update battery info after kinematics is updated
         if (battery_ != nullptr) {
-            BatteryInfo battery_info;
-            battery_info.state_of_charge = battery_->StateOfCharge();
-            battery_info.voltage = battery_->Voltage();
-            getController()->setBatteryInfo(battery_info);
+            FlightStats flight_stats;
+            flight_stats.state_of_charge = battery_->StateOfCharge();
+            flight_stats.voltage = battery_->Voltage();
+            flight_stats.energy_consumed = getEnergyConsumed();
+            flight_stats.flight_time = getTotalTime();
+            flight_stats.distance_traveled = getDistanceTraveled();
+            getController()->setFlightStats(flight_stats);
         }
     }
 

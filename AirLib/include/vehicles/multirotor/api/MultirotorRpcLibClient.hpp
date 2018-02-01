@@ -44,8 +44,8 @@ public:
   
     Vector3r getPosition();
     //CollisionInfo getCollisionInfo();
-    float getStateOfCharge();
-    float getVoltage();
+    FlightStats getFlightStats();
+    //float getVoltage();
     Vector3r getVelocity();
     Quaternionr getOrientation();
     RCData getRCData();

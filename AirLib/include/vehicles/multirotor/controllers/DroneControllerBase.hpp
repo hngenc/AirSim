@@ -215,8 +215,10 @@ public: //interface for outside world
     virtual void setCollisionInfo(const CollisionInfo& collision_info);
 
     // battery info is propagated similar to collision info
-    virtual BatteryInfo getBatteryInfo();
-    virtual void setBatteryInfo(const BatteryInfo& battery_info);
+    virtual FlightStats getFlightStats();
+    virtual void setFlightStats(const FlightStats& flight_stats);
+    // virtual double getEnergyInfo();
+
 
     //safety settings
     virtual void setSafetyEval(const shared_ptr<SafetyEval> safety_eval_ptr);
@@ -343,7 +345,7 @@ private:// vars
     float obs_avoidance_vel_ = 0.5f;
 
     CollisionInfo collision_info_;
-    BatteryInfo battery_info_;
+    FlightStats flight_stats_;
 
     // we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
     // base class method on DroneControllerBase that also grabs the StatusLock.

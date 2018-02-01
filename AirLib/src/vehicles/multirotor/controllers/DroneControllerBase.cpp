@@ -686,14 +686,21 @@ void DroneControllerBase::setCollisionInfo(const CollisionInfo& collision_info)
     collision_info_ = collision_info;
 }
 
-BatteryInfo DroneControllerBase::getBatteryInfo()
+FlightStats DroneControllerBase::getFlightStats()
 {
-    return battery_info_;
+    return flight_stats_;
 }
-void DroneControllerBase::setBatteryInfo(const BatteryInfo& battery_info)
+void DroneControllerBase::setFlightStats(const FlightStats& flight_stats)
 {
-    battery_info_ = battery_info;
+    flight_stats_ = flight_stats;
 }
+/*
+double DroneControllerBase::getEnergyInfo()
+{
+    return  getEnergyConsumed();
+}
+*/
+
 
 }} //namespace
 #endif

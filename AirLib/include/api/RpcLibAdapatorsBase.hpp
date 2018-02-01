@@ -103,6 +103,44 @@ public:
             return msr::airlib::Quaternionr(w_val, x_val, y_val, z_val);
         }
     };
+   
+    struct FlightStats{
+
+        float state_of_charge = -1.0f;
+        float voltage = -1.0f;
+        float energy_consumed = -1.0f;
+        float flight_time = -1.0;
+        float distance_traveled = -1.0f;
+
+        MSGPACK_DEFINE_MAP(state_of_charge,
+                voltage,
+                energy_consumed,
+                flight_time,
+                distance_traveled);
+
+        FlightStats()
+        {}
+        
+        FlightStats(const msr::airlib::FlightStats& s)
+        {
+            state_of_charge = s.state_of_charge;
+            voltage = s.voltage;
+            energy_consumed = s.energy_consumed;
+            flight_time = s.flight_time;
+            distance_traveled = s.distance_traveled;
+        }
+        
+        msr::airlib::FlightStats to() const
+        {
+            return msr::airlib::FlightStats(state_of_charge,
+                    voltage,
+                    energy_consumed,
+                    flight_time,
+                    distance_traveled);
+       }
+    };
+
+
 
     struct Pose {
         Vector3r position;

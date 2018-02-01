@@ -99,7 +99,7 @@ private:
           auto P = p_estimator_.Estimate(body.getMass(), dt, current, next);
           body.getBattery()->update(dt, P);
           body.updateDistanceTraveled(current.pose);
-		  body.updateEnergyConsumed(P*dt);
+		  body.updateEnergyConsumed(P * float(dt));
 	      body.updateTime(dt);
 
         }

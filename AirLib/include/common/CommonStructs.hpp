@@ -211,9 +211,29 @@ struct GeoPose {
 
 // TODO(wcui): Change this class if you want to provide more information to
 // RPC Client
-struct BatteryInfo {
+struct FlightStats{
     float state_of_charge;
     float voltage;
+    float energy_consumed;
+    float flight_time;
+    float distance_traveled;
+
+    FlightStats()
+    {}
+    
+    FlightStats(float state_of_charge_val,
+                float voltage_val,
+                float energy_consumed_val,
+                float flight_time_val,
+                float distance_traveled_val) : 
+        state_of_charge(state_of_charge_val), 
+        voltage(voltage_val), 
+        energy_consumed(energy_consumed_val), 
+        flight_time(flight_time_val), 
+        distance_traveled(distance_traveled_val)
+    {
+    }
+
 };
 
 }} //namespace

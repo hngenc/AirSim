@@ -224,10 +224,11 @@ public:
         return controller_->getCollisionInfo();
     }
 
-    BatteryInfo getBatteryInfo()
+    FlightStats getFlightStats()
     {
-        return controller_->getBatteryInfo();
+        return controller_->getFlightStats();
     }
+    
 
     RCData getRCData()
     {

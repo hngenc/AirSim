@@ -148,16 +148,16 @@ CollisionInfo MultirotorRpcLibClient::getCollisionInfo()
     return static_cast<rpc::client*>(getClient())->call("getCollisionInfo").as<MultirotorRpcLibAdapators::CollisionInfo>().to();
 }
 */
-float MultirotorRpcLibClient::getStateOfCharge()
+FlightStats MultirotorRpcLibClient::getFlightStats()
 {
-    return static_cast<rpc::client*>(getClient())->call("getStateOfCharge").as<float>();
+    return static_cast<rpc::client*>(getClient())->call("getFlightStats").as<MultirotorRpcLibAdapators::FlightStats>().to();
 }
-
+/*
 float MultirotorRpcLibClient::getVoltage()
 {
     return static_cast<rpc::client*>(getClient())->call("getVoltage").as<float>();
 }
-
+*/
 TTimePoint MultirotorRpcLibClient::timestampNow()
 {
     return static_cast<rpc::client*>(getClient())->call("timestampNow").as<TTimePoint>();

@@ -251,6 +251,10 @@ void MultiRotorConnector::updateRendering(float dt)
         //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response_info.collision_count_raw), LogDebugLevel::Unimportant);
         UAirBlueprintLib::LogMessage(TEXT("Voltage:"), FString::SanitizeFloat(vehicle_.getVotage()), LogDebugLevel::Failure);
         UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), FString::FromInt(collision_response_info.collision_count_non_resting), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("StateOfCharge:"), FString::SanitizeFloat(vehicle_.getStateOfCharge()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("EnergyConsumed:"), FString::SanitizeFloat(vehicle_.getEnergyConsumed()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("distanceTraveled:"), FString::SanitizeFloat(vehicle_.getDistanceTraveled()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("flightTime:"), FString::SanitizeFloat(vehicle_.getTotalTime()), LogDebugLevel::Failure);
     }
 }
 

@@ -58,8 +58,9 @@ int main()
             }
         }
 
-        std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
-        std::cout << "Voltage " << client.getVoltage() << std::endl;
+        //std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
+        //std::cout << "Voltage " << client.getVoltage() << std::endl;
+        std::cout << "SoC(%) " << client.getFlightStats().state_of_charge << std::endl;
         std::cout << "Press Enter to arm the drone" << std::endl; std::cin.get();
         client.enableApiControl(true);
         client.armDisarm(true);
@@ -95,8 +96,8 @@ int main()
         std::cout << "moveByVelocityZ(0, " << -speed << "," << z << "," << duration << ")" << std::endl;
         client.moveByVelocityZ(0, -speed, z, duration, driveTrain, yaw_mode);
         std::this_thread::sleep_for(std::chrono::duration<double>(duration));
-        std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
-        std::cout << "Voltage " << client.getVoltage() << std::endl;
+        //std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
+        //std::cout << "Voltage " << client.getVoltage() << std::endl;
 
         client.hover();
 
@@ -105,7 +106,6 @@ int main()
 
         std::cout << "Press Enter to disarm" << std::endl; std::cin.get();
         client.armDisarm(false);
-        std::cout << "SoC(%) " << client.getStateOfCharge() << std::endl;
 
     }
     catch (rpc::rpc_error&  e) {
