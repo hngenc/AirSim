@@ -92,7 +92,7 @@ class EnergyRotorSpecs{
         }
         
         void set_vxy_axy_coeff(float vxy_axy_coeff){
-            vxy_coeff_ = vxy_axy_coeff; 
+            vxy_axy_coeff_ = vxy_axy_coeff; 
         }
 
         void set_vz_coeff(float vz_coeff){
@@ -115,7 +115,7 @@ class EnergyRotorSpecs{
          mass_coeff_,
          vxy_coeff_, 
          axy_coeff_, 
-         vxy_axy_coeffs_,
+         vxy_axy_coeff_,
          vz_coeff_, 
          az_coeff_, 
          vz_az_coeff_,

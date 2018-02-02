@@ -94,13 +94,13 @@ public:
         energy_rotor_specs_.set_mass(float(settings.getFloat("mass", 0)));
         energy_rotor_specs_.set_mass_coeff(float(settings.getFloat("mass_coeff", 0)));
         energy_rotor_specs_.set_vxy_coeff(float(settings.getFloat("vxy_coeff", 0)));
-        energy_rotor_specs_.set_vxy_coeff(float(settings.getFloat("vxy_coeff", 0)));
+        energy_rotor_specs_.set_axy_coeff(float(settings.getFloat("axy_coeff", 0)));
         energy_rotor_specs_.set_vxy_axy_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
-        energy_rotor_specs_.set_vz_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
-        energy_rotor_specs_.set_az_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
-        energy_rotor_specs_.set_vz_az_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
-        energy_rotor_specs_.set_one_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
-        energy_rotor_specs_.set_vxy_wxy_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vz_coeff(float(settings.getFloat("vz_coeff", 0)));
+        energy_rotor_specs_.set_az_coeff(float(settings.getFloat("az_coeff", 0)));
+        energy_rotor_specs_.set_vz_az_coeff(float(settings.getFloat("vz_az_coeff", 0)));
+        energy_rotor_specs_.set_one_coeff(float(settings.getFloat("one_coeff", 0)));
+        energy_rotor_specs_.set_vxy_wxy_coeff(float(settings.getFloat("vxy_wxy_coeff", 0)));
     }
     
     EnergyRotorSpecs getEnergyRotorSpecs(){

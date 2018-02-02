@@ -116,11 +116,18 @@ class PowerEstimator {
     auto ay = current.accelerations.linear[1];
     auto az = current.accelerations.linear[2];
     
+   
+
     double vxy_mag = pow(pow(vx, 2) + pow(vy, 2), .5);
     double axy_mag = pow(pow(ax, 2) + pow(ay, 2), .5);
     double vz_mag = abs(vz);
     double az_mag = abs(az);
-    
+  
+    if (vxy_mag > 1.0) {
+        printf("here");
+    }
+
+
     double first_vec[] = {vxy_mag, axy_mag, vxy_mag*axy_mag};
     double first_coeff[] = {rotor_energy_specs.get_vxy_coeff(), rotor_energy_specs.get_axy_coeff(), rotor_energy_specs.get_vxy_axy_coeff()};
 
