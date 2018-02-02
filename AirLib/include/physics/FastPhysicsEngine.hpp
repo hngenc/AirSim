@@ -96,12 +96,11 @@ private:
 
         // wcui: Update battery stats of the physical body
         if (body.hasBattery()) { //only intrested in bodies with electrical constraints
-          auto P = p_estimator_.Estimate(body.getMass(), dt, current, next);
-          body.getBattery()->update(dt, P);
+          auto P = p_estimator_.Estimate(body.getEnergyRotorSpecs(), current);
+          body.getBattery()->update(dt, (float)P);
           body.updateDistanceTraveled(current.pose);
-		  body.updateEnergyConsumed(P * float(dt));
+		  body.updateEnergyConsumed((float)P * float(dt));
 	      body.updateTime(dt);
-
         }
 
         body.setKinematics(next);

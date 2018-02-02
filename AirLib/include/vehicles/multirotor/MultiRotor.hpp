@@ -52,8 +52,10 @@ public:
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
         Settings& settings = Settings::singleton();
+        setEnergyRotorSpecs(settings);  //set energy coeffs
         float v = float(settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE));
         float c = float(settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY));
+        
         battery_ = new powerlib::Battery(v, c);
 
         createRotors(*params_, rotors_, environment);
@@ -88,6 +90,23 @@ public:
         }
     }
 
+    void setEnergyRotorSpecs(Settings& settings){ 
+        energy_rotor_specs_.set_mass(float(settings.getFloat("mass", 0)));
+        energy_rotor_specs_.set_mass_coeff(float(settings.getFloat("mass_coeff", 0)));
+        energy_rotor_specs_.set_vxy_coeff(float(settings.getFloat("vxy_coeff", 0)));
+        energy_rotor_specs_.set_vxy_coeff(float(settings.getFloat("vxy_coeff", 0)));
+        energy_rotor_specs_.set_vxy_axy_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vz_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_az_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vz_az_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_one_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vxy_wxy_coeff(float(settings.getFloat("vxy_axy_coeff", 0)));
+    }
+    
+    EnergyRotorSpecs getEnergyRotorSpecs(){
+        return energy_rotor_specs_;
+    }
+    
     virtual void update() override
     {
         //update forces and environment as a result of last dt
@@ -262,6 +281,7 @@ private: //fields
     //let us be the owner of rotors object
     vector<Rotor> rotors_;
     vector<PhysicsBodyVertex> drag_vertices_;
+     EnergyRotorSpecs energy_rotor_specs_;
 };
 
 }} //namespace

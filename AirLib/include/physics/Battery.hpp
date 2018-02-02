@@ -11,6 +11,8 @@
 #include "common/CommonStructs.hpp"
 #include "common/SteppableClock.hpp"
 #include <cinttypes>
+//#include <math.h>
+#include <numeric>
 
 namespace msr { namespace airlib {
 
@@ -81,6 +83,7 @@ class CurveEvaluator {
   std::vector<cvec2f> data_;
 };
 
+
 // TODO(wcui): Inherit this class to change power estimator behavior.
 class PowerEstimator {
  public:
@@ -100,13 +103,50 @@ class PowerEstimator {
     steady_.setData(x3, y3);
   }
 
-  virtual float Estimate(real_T mass, TTimeDelta dt,
-                         const Kinematics::State& current,
-                         const Kinematics::State& next) {
-	(void)(mass);
+  virtual double Estimate(EnergyRotorSpecs rotor_energy_specs,
+                         const Kinematics::State& current)//,
+                         //const Kinematics::State& next) 
+                         {
+	//(void)(mass);
+    auto mass = rotor_energy_specs.get_mass();
+    auto vx = current.twist.linear[0];
+    auto vy = current.twist.linear[1];
+    auto vz = current.twist.linear[2];
+    auto ax = current.accelerations.linear[0];
+    auto ay = current.accelerations.linear[1];
+    auto az = current.accelerations.linear[2];
+    
+    double vxy_mag = pow(pow(vx, 2) + pow(vy, 2), .5);
+    double axy_mag = pow(pow(ax, 2) + pow(ay, 2), .5);
+    double vz_mag = abs(vz);
+    double az_mag = abs(az);
+    
+    double first_vec[] = {vxy_mag, axy_mag, vxy_mag*axy_mag};
+    double first_coeff[] = {rotor_energy_specs.get_vxy_coeff(), rotor_energy_specs.get_axy_coeff(), rotor_energy_specs.get_vxy_axy_coeff()};
 
-    auto v1 = current.twist.linear.norm(),
-         v2 = next.twist.linear.norm();
+    double second_vec[] = {vz_mag, az_mag, vz_mag*az_mag};
+    double second_coeff[] = {rotor_energy_specs.get_vz_coeff(), rotor_energy_specs.get_az_coeff(), rotor_energy_specs.get_vz_az_coeff()};
+    
+    double third_vec[] = {mass, 0, 1};
+    double third_coeff[] = {rotor_energy_specs.get_mass_coeff(), rotor_energy_specs.get_vxy_wxy_coeff(), rotor_energy_specs.get_one_coeff()};
+
+
+    double inner_product_one = std::inner_product(std::begin(first_vec), std::end(first_vec), 
+            std::begin(first_coeff), 0.0);
+
+    double inner_product_two = std::inner_product(std::begin(second_vec), std::end(second_vec), 
+            std::begin(second_coeff), 0.0);
+
+    double inner_product_third = std::inner_product(std::begin(third_vec), std::end(third_vec), 
+            std::begin(third_coeff), 0.0);
+
+    return inner_product_one + inner_product_two + inner_product_third;
+
+
+   /*  //old model
+    auto v2 = next.twist.linear.norm();
+       auto v1 = current.twist.linear.norm(),
+    v2 = next.twist.linear.norm();
     auto diff = v2 - v1;
     if (diff >= acc_thresh_ * dt) {
       return accelerate_.eval(v1);
@@ -115,6 +155,8 @@ class PowerEstimator {
     } else {
       return steady_.eval(v1);
     }
+    */
+  
   }
 
  private:

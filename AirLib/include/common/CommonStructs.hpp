@@ -7,7 +7,122 @@
 #include "common/Common.hpp"
 #include <ostream>
 
+
+
 namespace msr { namespace airlib {
+
+class EnergyRotorSpecs{
+    public:
+        
+        EnergyRotorSpecs() 
+        {}
+        /* 
+        EnergyRotorSpecs(float mass, float mass_coeff, float vxy_coeff, 
+                float axy_coeff, float vxy_axy_coeffs,
+                float vz_coeff, float az_coeff, float vz_az_coeff, float one_coeff, ){
+            mass_ = mass; 
+            mass_coeff_ = mass_coeff; 
+            one_coeff_ = one_coeff; 
+            vxy_wxy_coeff_ = vyx_wxy_coeff; 
+            vxy_coeff_ = vxy_coeff; 
+            axy_coeff_ = axy_coeff; 
+            vxy_axy_coeffs_ = vxy_axy_coeffs;
+            vz_coeff_ = vz_coeff; 
+            az_coeff_ = az_coeff;
+            vz_az_coeff_ = vz_az_coeff;
+        }
+        */
+        float get_mass(){
+            return mass_;
+        }
+       
+        float get_mass_coeff(){
+            return mass_;
+        }
+        
+        float get_one_coeff(){
+            return one_coeff_;
+        }
+        
+        float get_vxy_wxy_coeff(){
+            return vxy_wxy_coeff_;
+        }
+
+        float get_vxy_coeff(){
+            return vxy_coeff_; 
+        }
+        
+        float get_vxy_axy_coeff(){
+            return vxy_coeff_; 
+        }
+
+        float get_vz_coeff(){
+            return vz_coeff_; 
+        }
+
+        float get_axy_coeff(){
+            return axy_coeff_; 
+        }
+
+        float get_az_coeff(){
+            return az_coeff_; 
+        }
+        float get_vz_az_coeff(){
+            return vz_az_coeff_; 
+        }
+    
+        void set_mass(float mass){
+            mass_ = mass;
+        }
+       
+        void set_mass_coeff(float mass_coeff){
+            mass_coeff_ = mass_coeff;
+        }
+        
+        void set_one_coeff(float one_coeff){
+            one_coeff_ = one_coeff;
+        }
+        
+        void set_vxy_wxy_coeff(float vxy_wxy_coeff){
+            vxy_wxy_coeff_ = vxy_wxy_coeff;
+        }
+
+        void set_vxy_coeff(float vxy_coeff){
+            vxy_coeff_ = vxy_coeff; 
+        }
+        
+        void set_vxy_axy_coeff(float vxy_axy_coeff){
+            vxy_coeff_ = vxy_axy_coeff; 
+        }
+
+        void set_vz_coeff(float vz_coeff){
+            vz_coeff_ = vz_coeff; 
+        }
+
+        void set_axy_coeff(float axy_coeff){
+            axy_coeff_ = axy_coeff; 
+        }
+
+        void set_az_coeff(float az_coeff){
+            az_coeff_ = az_coeff; 
+        }
+        void set_vz_az_coeff(float vz_az_coeff){
+            vz_az_coeff_ = vz_az_coeff; 
+        }
+
+    private:
+        float mass_, 
+         mass_coeff_,
+         vxy_coeff_, 
+         axy_coeff_, 
+         vxy_axy_coeffs_,
+         vz_coeff_, 
+         az_coeff_, 
+         vz_az_coeff_,
+         one_coeff_,
+         vxy_wxy_coeff_;
+};
+
 
 //velocity
 struct Twist {

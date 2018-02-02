@@ -42,6 +42,10 @@ public: //interface
     {
         return 0;
     }
+    virtual EnergyRotorSpecs getEnergyRotorSpecs(){
+         EnergyRotorSpecs energy_rotor_specs;     
+        return  energy_rotor_specs;
+    } 
     virtual PhysicsBodyVertex& getDragVertex(uint index)
     {
         unused(index);
