@@ -294,9 +294,15 @@ public: //methods
 		return distance_traveled_;
 	}
 
-	float getEnergyConsumed() const
+	
+    float getEnergyConsumed() const
 	{
 		return energy_consumed_;
+	}
+
+    int getCollisionCount() const
+	{
+		return collision_info_.collision_count;
 	}
 
 	float getTotalTime() const

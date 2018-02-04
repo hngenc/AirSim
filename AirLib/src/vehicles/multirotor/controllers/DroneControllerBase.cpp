@@ -694,12 +694,6 @@ void DroneControllerBase::setFlightStats(const FlightStats& flight_stats)
 {
     flight_stats_ = flight_stats;
 }
-/*
-double DroneControllerBase::getEnergyInfo()
-{
-    return  getEnergyConsumed();
-}
-*/
 
 
 }} //namespace

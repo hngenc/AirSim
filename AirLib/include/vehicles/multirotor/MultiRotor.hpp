@@ -151,6 +151,7 @@ public:
             flight_stats.state_of_charge = battery_->StateOfCharge();
             flight_stats.voltage = battery_->Voltage();
             flight_stats.energy_consumed = getEnergyConsumed();
+            flight_stats.collision_count = getCollisionCount();
             flight_stats.flight_time = getTotalTime();
             flight_stats.distance_traveled = getDistanceTraveled();
             getController()->setFlightStats(flight_stats);

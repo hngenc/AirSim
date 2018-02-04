@@ -332,7 +332,8 @@ struct FlightStats{
     float energy_consumed;
     float flight_time;
     float distance_traveled;
-
+    int collision_count;  
+    
     FlightStats()
     {}
     
@@ -340,12 +341,14 @@ struct FlightStats{
                 float voltage_val,
                 float energy_consumed_val,
                 float flight_time_val,
-                float distance_traveled_val) : 
+                float distance_traveled_val,
+                int collision_count_val):
         state_of_charge(state_of_charge_val), 
         voltage(voltage_val), 
         energy_consumed(energy_consumed_val), 
         flight_time(flight_time_val), 
-        distance_traveled(distance_traveled_val)
+        distance_traveled(distance_traveled_val),
+        collision_count(collision_count_val)
     {
     }
 

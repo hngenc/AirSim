@@ -111,12 +111,14 @@ public:
         float energy_consumed = -1.0f;
         float flight_time = -1.0;
         float distance_traveled = -1.0f;
+        int collision_count = 0;
 
         MSGPACK_DEFINE_MAP(state_of_charge,
                 voltage,
                 energy_consumed,
                 flight_time,
-                distance_traveled);
+                distance_traveled,
+                collision_count);
 
         FlightStats()
         {}
@@ -128,6 +130,7 @@ public:
             energy_consumed = s.energy_consumed;
             flight_time = s.flight_time;
             distance_traveled = s.distance_traveled;
+            collision_count = s.collision_count;
         }
         
         msr::airlib::FlightStats to() const
@@ -136,7 +139,8 @@ public:
                     voltage,
                     energy_consumed,
                     flight_time,
-                    distance_traveled);
+                    distance_traveled,
+                    collision_count);
        }
     };
 
