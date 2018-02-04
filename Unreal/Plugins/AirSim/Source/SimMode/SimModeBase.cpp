@@ -151,14 +151,26 @@ void ASimModeBase::readSettings()
     }
 
     clock_speed = settings.getFloat("ClockSpeed", 1.0f);
-
+	/*
     Settings record_settings;
     if (settings.getChild("Recording", record_settings)) {
         recording_settings.record_on_move = record_settings.getBool("RecordOnMove", recording_settings.record_on_move);
         recording_settings.record_interval = record_settings.getFloat("RecordInterval", recording_settings.record_interval);
     }
+    */
     
-    UAirBlueprintLib::LogMessage("Default config: ", default_vehicle_config.c_str(), LogDebugLevel::Informational);
+
+	Settings record_settings;
+	if (settings.getChild("Recording", record_settings)) {
+		recording_settings.record_on_move = record_settings.getBool("RecordOnMove", recording_settings.record_on_move);
+		recording_settings.record_interval = record_settings.getFloat("RecordInterval", recording_settings.record_interval);
+		recording_settings.record_upon_start = record_settings.getBool("RocordUponStart", recording_settings.record_upon_start);
+
+	}
+	
+
+	
+	UAirBlueprintLib::LogMessage("Default config: ", default_vehicle_config.c_str(), LogDebugLevel::Informational);
 
     // By default this is the column header. Override it in BeginPlay of pawn mode
     columns = { "Timestamp", "Position(x)", "Position(y)" , "Position(z)", "Orientation(w)", "Orientation(x)", "Orientation(y)", "Orientation(z)", "ImageName" };

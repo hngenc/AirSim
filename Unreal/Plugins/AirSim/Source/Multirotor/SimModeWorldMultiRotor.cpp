@@ -32,6 +32,11 @@ void ASimModeWorldMultiRotor::BeginPlay()
         }
     }
 
+	if (Super::recording_settings.record_upon_start) {
+		startRecording();
+	}
+
+
 }
 
 void ASimModeWorldMultiRotor::EndPlay(const EEndPlayReason::Type EndPlayReason)

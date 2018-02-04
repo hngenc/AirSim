@@ -8,6 +8,9 @@
 #include <fstream>
 #include <string>
 #include "Utils.hpp"
+#include <string>
+#include <iostream>
+//#include "AirBlueprintLib.h"
 
 // This defines a default folder name for all the files created by AirLib so they 
 // are all gathered nicely in one place in the user's documents folder.
@@ -102,9 +105,22 @@ public:
         return str.substr(ui, len - ui);
     }
 
-    static std::string getLogFolderPath(bool folder_timestamp)
-    {
-        std::string logfolder = folder_timestamp ? Utils::to_string(Utils::now()) : "";
+	static std::string getLogFolderPath(bool folder_timestamp)
+	{
+		std::string recording_folder_name;
+		if (!folder_timestamp) {
+			std::string  myfile_name = combine(getAppDataFolder(), "recording_folder_name.txt");
+			std::ifstream myfile;
+			
+			myfile.open(myfile_name);
+			if (myfile){
+				myfile >> recording_folder_name;
+			}else{
+				exit(0);
+			}
+
+		}
+		std::string logfolder = folder_timestamp ? Utils::to_string(Utils::now()) : recording_folder_name;
         std::string fullPath = combine(getAppDataFolder(), logfolder);
         ensureFolder(fullPath);
 
