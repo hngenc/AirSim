@@ -4,6 +4,7 @@
 #ifndef msr_airlib_multirotor_hpp
 #define msr_airlib_multirotor_hpp
 
+//#include "AirBlueprintLib.h"
 #include "common/Common.hpp"
 #include "common/CommonStructs.hpp"
 #include "Rotor.hpp"
@@ -93,19 +94,21 @@ public:
     void setEnergyRotorSpecs(Settings& settings){ 
        
 		Settings energy_model_settings;
-		if (!settings.getChild("EnergyModelSettings", energy_model_settings)) {
-			UAirBlueprintLib::LogMessage(TEXT("Energy model settings not provided. Energy values must  be ignored"), "", LogDebugLevel::Failure);
-		}
-			energy_rotor_specs_.set_mass(float(energy_model_settings.getFloat("mass", 0)));
-			energy_rotor_specs_.set_mass_coeff(float(energy_model_settings.getFloat("mass_coeff", 0)));
-			energy_rotor_specs_.set_vxy_coeff(float(energy_model_settings.getFloat("vxy_coeff", 0)));
-			energy_rotor_specs_.set_axy_coeff(float(energy_model_settings.getFloat("axy_coeff", 0)));
-			energy_rotor_specs_.set_vxy_axy_coeff(float(energy_model_settings.getFloat("vxy_axy_coeff", 0)));
-			energy_rotor_specs_.set_vz_coeff(float(energy_model_settings.getFloat("vz_coeff", 0)));
-			energy_rotor_specs_.set_az_coeff(float(energy_model_settings.getFloat("az_coeff", 0)));
-			energy_rotor_specs_.set_vz_az_coeff(float(energy_model_settings.getFloat("vz_az_coeff", 0)));
-			energy_rotor_specs_.set_one_coeff(float(energy_model_settings.getFloat("one_coeff", 0)));
-			energy_rotor_specs_.set_vxy_wxy_coeff(float(energy_model_settings.getFloat("vxy_wxy_coeff", 0)));
+		//if (!settings.getChild("EnergyModelSettings", energy_model_settings)) {
+			//UAirBlueprintLib::LogMessage(TEXT("Energy model settings not provided. Energy values must  be ignored"), "", LogDebugLevel::Failure);
+		//}
+        settings.getChild("EnergyModelSettings", energy_model_settings);
+
+        energy_rotor_specs_.set_mass(float(energy_model_settings.getFloat("mass", 0)));
+        energy_rotor_specs_.set_mass_coeff(float(energy_model_settings.getFloat("mass_coeff", 0)));
+        energy_rotor_specs_.set_vxy_coeff(float(energy_model_settings.getFloat("vxy_coeff", 0)));
+        energy_rotor_specs_.set_axy_coeff(float(energy_model_settings.getFloat("axy_coeff", 0)));
+        energy_rotor_specs_.set_vxy_axy_coeff(float(energy_model_settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vz_coeff(float(energy_model_settings.getFloat("vz_coeff", 0)));
+        energy_rotor_specs_.set_az_coeff(float(energy_model_settings.getFloat("az_coeff", 0)));
+        energy_rotor_specs_.set_vz_az_coeff(float(energy_model_settings.getFloat("vz_az_coeff", 0)));
+        energy_rotor_specs_.set_one_coeff(float(energy_model_settings.getFloat("one_coeff", 0)));
+        energy_rotor_specs_.set_vxy_wxy_coeff(float(energy_model_settings.getFloat("vxy_wxy_coeff", 0)));
 
     }
     

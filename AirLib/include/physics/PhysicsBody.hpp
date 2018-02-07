@@ -302,7 +302,7 @@ public: //methods
 
     int getCollisionCount() const
 	{
-		return collision_info_.collision_count;
+        return collision_response_info_.collision_count_non_resting;
 	}
 
 	float getTotalTime() const
