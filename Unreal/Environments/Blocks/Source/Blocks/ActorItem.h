@@ -30,17 +30,14 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void moveRand();
+	void moveRand(int x, int y, int z, int Rx, int Ry, int Rz);
 	void moveSin(float deltaTime);
 
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 	
-	UPROPERTY(EditAnywhere)
-	class USkeletalMeshComponent* PlayerMesh;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Assets")
-	USkeletalMesh* AlternateMeshAsset;
+	FString JsonString;
+	FString path;
 	
 };

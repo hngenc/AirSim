@@ -32,7 +32,8 @@ void ADynamicSpawningObject::Tick(float DeltaTime)
 	UWorld* World = GetWorld();
 	if (i<=30)
 	{
-		World->SpawnActor<AActorItem>(GetClass(), NewLocation, FRotator::ZeroRotator);
+		GetWorld()->SpawnActor<AActorItem>(this->GetClass(), NewLocation, FRotator::ZeroRotator);
+
 	}
 	i++;
 }
