@@ -8,11 +8,7 @@
 #include "Runtime/Json/Public/Serialization/JsonSerializer.h"
 #include "Runtime/Json/Public/Dom/JsonObject.h"
 #include "FileHelper.h"
-#include "Runtime/Core/Public/Misc/Paths.h"
-#include "Runtime/Json/Public/Serialization/JsonSerializer.h"
-#include "Runtime/Json/Public/Dom/JsonObject.h"
-#include "Runtime/Core/Public/Misc/Paths.h"
-#include "FileHelper.h"
+
 //#include "../../Plugins/AirSim/Source/AirLib/include/controllers/Settings.h"
 
 // Sets default values

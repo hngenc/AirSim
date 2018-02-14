@@ -32,6 +32,10 @@ public:
 	FVector curLoc;			//spawn location
 	FRotator ourRotation; //rotation of object
 	TSubclassOf<class AActorItem> itemSpawning;
+	UStaticMeshComponent* Mesh;
+	FString JsonString;
+	FString path;
+	int i;
 
 	
 };
