@@ -28,8 +28,6 @@ AActorItem::AActorItem()
 	//		Mesh->SetSkeletalMesh(AlternateMeshAsset);
 	//	}
 	//}
-	path = FPaths::GameSourceDir() + "Blocks/setting/ActorItem.json";
-	FFileHelper::LoadFileToString(JsonString, *path);
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *path);
 	FFileHelper::LoadFileToString(JsonString, *path);
 	currentTime = 0;
@@ -39,6 +37,8 @@ AActorItem::AActorItem()
 // Called when the game starts or when spawned
 void AActorItem::BeginPlay()
 {
+	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	FFileHelper::LoadFileToString(JsonString, *path);
 	Super::BeginPlay();
 	curLoc = GetActorLocation();
 	origLoc = GetActorLocation();

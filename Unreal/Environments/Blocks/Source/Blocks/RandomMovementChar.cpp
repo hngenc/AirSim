@@ -13,8 +13,7 @@ ARandomMovementChar::ARandomMovementChar()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	counter = 0;
-	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
-	FFileHelper::LoadFileToString(JsonString, *path);
+	
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *path);
 	FFileHelper::LoadFileToString(JsonString, *path);
 
@@ -23,6 +22,8 @@ ARandomMovementChar::ARandomMovementChar()
 // Called when the game starts or when spawned
 void ARandomMovementChar::BeginPlay()
 {
+	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	FFileHelper::LoadFileToString(JsonString, *path);
 	Super::BeginPlay();
 	
 }

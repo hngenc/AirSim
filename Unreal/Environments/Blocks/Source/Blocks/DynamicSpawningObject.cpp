@@ -23,8 +23,6 @@ ADynamicSpawningObject::ADynamicSpawningObject()
 	curLoc.Y = 100.f;
 	curLoc.Z = 900.f;
 	ourRotation.ZeroRotator; //rotation of object
-	path = FPaths::GameSourceDir() + "Blocks/setting/SpawningSetting.json";
-	FFileHelper::LoadFileToString(JsonString, *path);
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *path);
 	FFileHelper::LoadFileToString(JsonString, *path);
 	static ConstructorHelpers::FObjectFinder<UBlueprint> ItemBlueprint(TEXT("Blueprint'/Game/MyActorItem.MyActorItem'"));
@@ -36,7 +34,8 @@ ADynamicSpawningObject::ADynamicSpawningObject()
 // Called when the game starts or when spawned
 void ADynamicSpawningObject::BeginPlay()
 {
-
+	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	FFileHelper::LoadFileToString(JsonString, *path);
 	i = 0;
 	Super::BeginPlay();
 }
@@ -52,9 +51,9 @@ void ADynamicSpawningObject::Tick(float DeltaTime)
 	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
 	{
 		density = JsonParsed->GetNumberField("Density");
-		x = JsonParsed->GetNumberField("X");
-		y = JsonParsed->GetNumberField("Y");
-		z = JsonParsed->GetNumberField("Z");
+		x = JsonParsed->GetNumberField("SpawnX");
+		y = JsonParsed->GetNumberField("SpawnY");
+		z = JsonParsed->GetNumberField("SpawnZ");
 		
 	}
 	

@@ -1,5 +1,19 @@
 {
-  "RandMovSpeed": "200",
-  "X": "0",
-  "Y": "0"
+  "RandMovSpeed": "550",
+  "X": "1",
+  "Y": "1",
+  
+  "Density": "15",
+  "SpawnnX": "300",
+  "SpawnY": "300",
+  "SpawnZ": "300",
+  
+  "StacticX": "1000",
+  "StacticY": "1000",
+  "StacticZ": "1000",
+  "Trig": "0",
+  "TrigAmplitude": "1",
+  "RangeX": "30000",
+  "RangeY": "30000",
+  "RangeZ": "30000"
 }
