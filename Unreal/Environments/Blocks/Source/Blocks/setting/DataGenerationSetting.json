@@ -1,19 +1,31 @@
 {
-  "RandMovSpeed": "550",
-  "X": "1",
-  "Y": "1",
-  
-  "Density": "15",
-  "SpawnnX": "300",
-  "SpawnY": "300",
-  "SpawnZ": "300",
-  
-  "StacticX": "1000",
-  "StacticY": "1000",
-  "StacticZ": "1000",
-  "Trig": "0",
-  "TrigAmplitude": "1",
-  "RangeX": "30000",
-  "RangeY": "30000",
-  "RangeZ": "30000"
+  "char": {
+    "Speed": "550",
+    "Movement": {
+      "X": "0",
+      "Y": "1"
+    }
+  },
+
+  "obstacle_spawning": {
+    "Density": "15",
+    "Area": {
+      "X": "300",
+      "Y": "300",
+      "Z": "300"
+    }
+  },
+
+  "obstacle": {
+    "MaxSpeed": "1000",
+    "Movement": {
+      "Mode": "0"
+    },
+    "Range": {
+      "X": "30000",
+      "Y": "30000",
+      "Z": "30000"
+    }
+
+  }
 }

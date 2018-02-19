@@ -25,7 +25,7 @@ ADynamicSpawningObject::ADynamicSpawningObject()
 	ourRotation.ZeroRotator; //rotation of object
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *path);
 	FFileHelper::LoadFileToString(JsonString, *path);
-	static ConstructorHelpers::FObjectFinder<UBlueprint> ItemBlueprint(TEXT("Blueprint'/Game/MyActorItem.MyActorItem'"));
+	static ConstructorHelpers::FObjectFinder<UBlueprint> ItemBlueprint(TEXT("Blueprint'/Game/Obstacle.Obstacle'"));
 	if (ItemBlueprint.Object) {
 		itemSpawning = (UClass*)ItemBlueprint.Object->GeneratedClass;
 	}
@@ -37,26 +37,24 @@ void ADynamicSpawningObject::BeginPlay()
 	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
 	FFileHelper::LoadFileToString(JsonString, *path);
 	i = 0;
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject) &&
+		JsonObject.IsValid())
+	{
+		TSharedPtr<FJsonObject> jsonObj = JsonObject->GetObjectField("obstacle_spawning");
+		density = jsonObj->GetNumberField("Density");
+
+		TSharedPtr<FJsonObject> jsonArea = jsonObj->GetObjectField("Area");
+		x = jsonArea->GetNumberField("X");
+		y = jsonArea->GetNumberField("Y");
+		z = jsonArea->GetNumberField("Z");
+	}
 	Super::BeginPlay();
 }
 // Called every frame
 void ADynamicSpawningObject::Tick(float DeltaTime)
 {
-	float density = 0;
-	float z = 0;
-	float y = 0;
-	float x = 0;
-	TSharedPtr<FJsonObject> JsonParsed;
-	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
-	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
-	{
-		density = JsonParsed->GetNumberField("Density");
-		x = JsonParsed->GetNumberField("SpawnX");
-		y = JsonParsed->GetNumberField("SpawnY");
-		z = JsonParsed->GetNumberField("SpawnZ");
-		
-	}
-	
 	Super::Tick(DeltaTime);
 	FVector NewLocation = GetActorLocation() + FVector(FMath::RandRange(-x, x), FMath::RandRange(-y, y), FMath::RandRange(-z, z));
 	UWorld* World = GetWorld();

@@ -36,6 +36,9 @@ public:
 	FString JsonString;
 	FString path;
 	int i;
-
+	float density = 0;
+	float z = 0;
+	float y = 0;
+	float x = 0;
 	
 };

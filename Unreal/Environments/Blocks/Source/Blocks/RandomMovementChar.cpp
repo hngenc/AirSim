@@ -24,6 +24,19 @@ void ARandomMovementChar::BeginPlay()
 {
 	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
 	FFileHelper::LoadFileToString(JsonString, *path);
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject) &&
+		JsonObject.IsValid())
+	{
+		TSharedPtr<FJsonObject> jsonObj = JsonObject->GetObjectField("char");
+		speed = jsonObj->GetNumberField("Speed");
+
+		TSharedPtr<FJsonObject> jsonMov = jsonObj->GetObjectField("Movement");
+		x = jsonMov->GetNumberField("X");
+		y = jsonMov->GetNumberField("Y");
+	}
+	GetCharacterMovement()->MaxWalkSpeed = speed;
 	Super::BeginPlay();
 	
 }
@@ -31,26 +44,7 @@ void ARandomMovementChar::BeginPlay()
 // Called every frame
 void ARandomMovementChar::Tick(float DeltaTime)
 {
-	float speed =1;
-	float x = 1;
-	float y = 1;
-	TSharedPtr<FJsonObject> JsonParsed;
-	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
-	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
-	{
-		speed = JsonParsed->GetNumberField("RandMovSpeed");
-		x = JsonParsed->GetNumberField("X");
-		y = JsonParsed->GetNumberField("Y");
-	}
-
-	/*FString JsonRaw = "{ \"exampleString\": \".1\" }";
-	TSharedPtr<FJsonObject> JsonParsed;
-	TSharedRef<TJsonReader<TCHAR>> JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonRaw);
-	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
-	{
-		speed = JsonParsed->GetNumberField("exampleString");
-	}*/
-	GetCharacterMovement()->MaxWalkSpeed = speed;
+	
 	Super::Tick(DeltaTime);
 	counter += 1 * DeltaTime;
 	if (counter == 100) {

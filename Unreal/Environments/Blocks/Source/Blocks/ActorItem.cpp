@@ -16,9 +16,12 @@ AActorItem::AActorItem()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
-	static ConstructorHelpers::FObjectFinder <UStaticMesh>StaticMesh(TEXT("StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
-	Mesh->SetStaticMesh(StaticMesh.Object);
+	//Mesh = CreateDefaultSubobject<UClass>(TEXT("Mesh"));
+	static ConstructorHelpers::FObjectFinder <UBlueprint>ItemBlueprint(TEXT("Blueprint'/Game/Cube.Cube'"));
+	//Mesh->GeneratedClass(UBlueprint.Object);
+	if (ItemBlueprint.Object) {
+		Mesh = (UClass*)ItemBlueprint.Object->GeneratedClass;
+	}
 	//static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshContainer(TEXT("SkeletalMesh'/Block/Content/GR_MALE_HERO_02/Character/Mesh/SK_Mannequin.SK_Mannequin'"));
 	//if (MeshContainer.Succeeded())
 	//{
@@ -39,76 +42,108 @@ void AActorItem::BeginPlay()
 {
 	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
 	FFileHelper::LoadFileToString(JsonString, *path);
+	TSharedPtr<FJsonObject> JsonObject;
+	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
+	if (FJsonSerializer::Deserialize(JsonReader, JsonObject) &&
+		JsonObject.IsValid())
+	{
+		TSharedPtr<FJsonObject> jsonObj = JsonObject->GetObjectField("obstacle");
+		speed = jsonObj->GetNumberField("MaxSpeed");
+
+		TSharedPtr<FJsonObject> jsonMov = jsonObj->GetObjectField("Movement");
+		movementType = jsonMov->GetNumberField("Mode");
+
+		TSharedPtr<FJsonObject> jsonArea = jsonObj->GetObjectField("Range");
+		Rx = jsonArea->GetNumberField("X");
+		Ry = jsonArea->GetNumberField("Y");
+		Rz = jsonArea->GetNumberField("Z");
+	}
 	Super::BeginPlay();
 	curLoc = GetActorLocation();
-	origLoc = GetActorLocation();
+	lowBoundary = GetActorLocation() + FVector(-Rx,- Ry, -Rz);
+	highBoundary = GetActorLocation() + FVector(Rx, Ry, Rz);
 	newVector = GetActorLocation();
-	lowBound = curLoc.X - 300;
-	highBound = curLoc.X + 300;
-}
-
-
-void AActorItem::move(float x, float y, float z) {
 	
-	if (movementType == 0) {
-		if (curLoc.X > newVector.X)
-		{
-			curLoc.X -= x;
-		}
-		else
-			curLoc.X += x;
-
-		if (curLoc.Y > newVector.Y)
-		{
-			curLoc.Y -= y;
-		}
-		else
-			curLoc.Y += y;
-
-		if (curLoc.Z > newVector.Z)
-		{
-			curLoc.Z -= z;
-		}
-		else
-			curLoc.Z += z;
-	}
-	else {
-		curLoc.X += x;
-		curLoc.Y += y;
-		curLoc.Z += z;
-	}
 }
 
-void AActorItem::moveRand(int x,int y,int z, int Rx, int Ry, int Rz) {
+
+
+
+void AActorItem::moveRand(float deltaTime, int Rx, int Ry, int Rz) {
 	curLoc = GetActorLocation();
-	FVector low = newVector - FVector(2, 2, 2);
-	FVector hi = newVector + FVector(2, 2, 2);
-	if ((curLoc.X < hi.X) && (curLoc.Y < hi.Y) && (curLoc.Z < hi.Z) &&
-		(curLoc.X > low.X) && (curLoc.Y > low.Y) && (curLoc.Z > low.Z)) {
-		newVector = curLoc + FVector(FMath::RandRange(-Rx, Rx), FMath::RandRange(-Ry, Ry), FMath::RandRange(-Rz, Rz));
+	newVector = GetActorLocation();
+	/*FVector low = newVector - FVector(Rx,Ry, Rz);
+	FVector hi = newVector + FVector(Rx, Ry, Rz);
+	if ((curLoc.X < hi.X) || (curLoc.Y < hi.Y) || (curLoc.Z < hi.Z) ||
+		(curLoc.X > low.X) || (curLoc.Y > low.Y) || (curLoc.Z > low.Z)) {
+		newVector = curLoc + FVector(FMath::RandRange(-speed, speed), FMath::RandRange(-speed, speed), FMath::RandRange(-speed, speed));
 		move(x,y,z);
 		SetActorLocation(curLoc, false);
 	}
 	else {
 		move(x,y,z);
 		SetActorLocation(curLoc, false);
+	}*/
+	
+	int x = FMath::RandRange(-100, 100);
+	int y = FMath::RandRange(-100, 100);
+	int z = FMath::RandRange(-100, 100);
+	
+	if (x > 0) {
+		if ((newVector.X + speed*deltaTime) < highBoundary.X)
+			newVector.X += speed*deltaTime;
+		else
+			newVector.X -= speed*deltaTime;
 	}
+	else if(x<0) {
+		if ((newVector.X - speed*deltaTime) > lowBoundary.X)
+			newVector.X -= speed*deltaTime;
+		else
+			newVector.X += speed*deltaTime;
+	}
+
+	if (y >0) {
+		if ((newVector.Y + speed*deltaTime) < highBoundary.Y)
+			newVector.Y += speed*deltaTime;
+		else
+			newVector.Y -= speed*deltaTime;
+	}
+	else if(y <0){
+		if ((newVector.Y - speed*deltaTime) > lowBoundary.Y)
+			newVector.Y -= speed*deltaTime;
+		else
+			newVector.Y += speed*deltaTime;
+	}
+
+	if (z > 0) {
+		if ((newVector.Z + speed*deltaTime) < highBoundary.Z)
+			newVector.Z+= speed*deltaTime;
+		else
+			newVector.Z -= speed*deltaTime;
+	}
+	else if( z<0) {
+		if ((newVector.Z- speed*deltaTime) > lowBoundary.Z)
+			newVector.Z -= speed*deltaTime;
+		else
+			newVector.Z += speed*deltaTime;
+	}
+
+	SetActorLocation(newVector, false);
+
 }
 
 void AActorItem::moveSin(float deltaTime) {
 	curLoc = GetActorLocation();
-	currentTime = currentTime + 1;
+	currentTime = currentTime + speed;
 
 	float moveDisX = 1;
-	float moveDisY = 10*sin((currentTime)*PI / 180);
-	move(0, moveDisX, moveDisY);
+	float moveDisY = speed*sin((currentTime)*PI / 180);
 	if ( currentTime == 360*5)
 	{
-		SetActorLocation(origLoc, false);
-		currentTime = 0;
+		speed = -speed;
 	}
 	else
-		SetActorLocation(curLoc, false);
+		SetActorLocation(curLoc+FVector(0,moveDisX, moveDisY), false);
 
 }
 
@@ -117,29 +152,9 @@ void AActorItem::moveSin(float deltaTime) {
 void AActorItem::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	float speed = 1;
-	int x = 1;
-	int y = 1;
-	int z = 1;
-	int Rx = 300;
-	int Ry = 300;
-	int Rz = 300;
-	TSharedPtr<FJsonObject> JsonParsed;
-	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
-	if (FJsonSerializer::Deserialize(JsonReader, JsonParsed))
-	{
-		speed = JsonParsed->GetNumberField("TrigAmplitude");
-		x = JsonParsed->GetNumberField("StaticX");
-		y = JsonParsed->GetNumberField("StaticY");
-		z = JsonParsed->GetNumberField("StaticZ");
-		movementType = JsonParsed->GetNumberField("Trig");
-		Rx = JsonParsed->GetNumberField("RangeX");
-		Ry = JsonParsed->GetNumberField("RangeY");
-		Rz = JsonParsed->GetNumberField("RangeZ");
-	}
 	switch (movementType)
 	{
-		case 0: moveRand(x,y,z, Rx, Ry, Rz); break;
+		case 0: moveRand(DeltaTime, Rx, Ry, Rz); break;
 		case 1: moveSin(DeltaTime); break;
 		default:
 			break;

@@ -18,26 +18,33 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	void move(float x, float y, float z);
+	//void move(float x, float y, float z);
 	FVector curLoc;
-	FVector origLoc;
+	FVector lowBoundary;
+	FVector highBoundary;
 	FVector newVector;
 	float currentTime;
-	float lowBound;
-	float highBound;
-	int movementType;
+	
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void moveRand(int x, int y, int z, int Rx, int Ry, int Rz);
+	void moveRand(float deltaTime, int Rx, int Ry, int Rz);
 	void moveSin(float deltaTime);
 
 
 	UPROPERTY(EditAnywhere)
-	UStaticMeshComponent* Mesh;
+	UClass* Mesh;
 	
 	FString JsonString;
 	FString path;
-	
+	float speed = 1;
+	int x = 1;
+	int y = 1;
+	int z = 1;
+	int Rx = 300;
+	int Ry = 300;
+	int Rz = 300;
+	int movementType;
+
 };

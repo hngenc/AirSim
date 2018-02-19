@@ -29,8 +29,11 @@ public:
 	FString JsonString;
 	FString path;
 	
-	
+
+
+	float speed = 1;
+	float x = 1;
+	float y = 1;
 	int counter = 0;
 	int choice;
-	int speedScale;
 };
