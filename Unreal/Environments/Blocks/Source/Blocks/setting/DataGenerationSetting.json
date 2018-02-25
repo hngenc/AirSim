@@ -3,12 +3,12 @@
     "Speed": "550",
     "Movement": {
       "X": "0",
-      "Y": "1"
+      "Y": "0"
     }
   },
 
   "obstacle_spawning": {
-    "Density": "15",
+    "Density": "5",
     "Area": {
       "X": "300",
       "Y": "300",
@@ -17,7 +17,7 @@
   },
 
   "obstacle": {
-    "MaxSpeed": "1000",
+    "MaxSpeed": "0",
     "Movement": {
       "Mode": "0"
     },

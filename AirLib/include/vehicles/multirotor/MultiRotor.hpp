@@ -165,6 +165,11 @@ public:
             flight_stats.distance_traveled = getDistanceTraveled();
             getController()->setFlightStats(flight_stats);
         }
+            IMUStats IMU_stats;
+            IMU_stats.orientation = getKinematics().pose.orientation;
+            IMU_stats.angular_velocity = getKinematics().twist.angular;
+            IMU_stats.linear_acceleration = getKinematics().accelerations.linear;
+            getController()->setIMUStats(IMU_stats);
     }
 
     //sensor getter
