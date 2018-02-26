@@ -7,6 +7,9 @@
 #include "Runtime/Engine/Classes/GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "FileHelper.h"
+#include <codecvt>
+#include <fstream>
+#include <string>
 // Sets default values
 ARandomMovementChar::ARandomMovementChar()
 {
@@ -22,7 +25,15 @@ ARandomMovementChar::ARandomMovementChar()
 // Called when the game starts or when spawned
 void ARandomMovementChar::BeginPlay()
 {
-	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	//path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	std::wstring userProfile = _wgetenv(L"USERPROFILE");
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+	//return converter.to_bytes(userProfile);
+	std::string path2 = (std::string) converter.to_bytes(userProfile) + "\\Documents\\DataGenerationSetting.json";
+
+	//path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+
+	path = FString(path2.c_str());
 	FFileHelper::LoadFileToString(JsonString, *path);
 	TSharedPtr<FJsonObject> JsonObject;
 	TSharedRef< TJsonReader<TCHAR> > JsonReader = TJsonReaderFactory<TCHAR>::Create(JsonString);
