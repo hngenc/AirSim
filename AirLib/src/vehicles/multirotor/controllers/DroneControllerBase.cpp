@@ -690,6 +690,17 @@ FlightStats DroneControllerBase::getFlightStats()
 {
     return flight_stats_;
 }
+
+IMUStats DroneControllerBase::getIMUStats()
+{
+    return IMU_stats_;
+}
+
+void DroneControllerBase::setIMUStats(const IMUStats& IMU_stats)
+{
+    IMU_stats_ = IMU_stats;
+}
+
 void DroneControllerBase::setFlightStats(const FlightStats& flight_stats)
 {
     flight_stats_ = flight_stats;

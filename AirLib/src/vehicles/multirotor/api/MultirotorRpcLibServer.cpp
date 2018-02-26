@@ -112,6 +112,10 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(DroneApi* drone, string server_ad
         bind("getCollisionInfo", [&]() -> MultirotorRpcLibAdapators::CollisionInfo { return getDroneApi()->getCollisionInfo(); });*/
     (static_cast<rpc::server*>(getServer()))->
         bind("getFlightStats", [&]() -> MultirotorRpcLibAdapators::FlightStats { return getDroneApi()->getFlightStats(); });
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getIMUStats", [&]() -> MultirotorRpcLibAdapators::IMUStats { return getDroneApi()->getIMUStats(); });
+
+    
     /* 
     (static_cast<rpc::server*>(getServer()))->
         bind("getVoltage", [&]() -> float { return getDroneApi()->getBatteryInfo().voltage; });

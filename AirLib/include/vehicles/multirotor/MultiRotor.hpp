@@ -13,6 +13,7 @@
 #include "MultiRotorParams.hpp"
 #include <vector>
 #include "physics/PhysicsBody.hpp"
+#include "common/ClockFactory.hpp"
 
 #ifndef DEFAULT_VOLTAGE
 #define DEFAULT_VOLTAGE (11.1f)
@@ -165,6 +166,12 @@ public:
             flight_stats.distance_traveled = getDistanceTraveled();
             getController()->setFlightStats(flight_stats);
         }
+            IMUStats IMU_stats;
+            IMU_stats.orientation = getKinematics().pose.orientation;
+            IMU_stats.angular_velocity = getKinematics().twist.angular;
+            IMU_stats.linear_acceleration = getKinematics().accelerations.linear;
+            IMU_stats.time_stamp = ClockFactory::get()->nowNanos();;
+            getController()->setIMUStats(IMU_stats);
     }
 
     //sensor getter

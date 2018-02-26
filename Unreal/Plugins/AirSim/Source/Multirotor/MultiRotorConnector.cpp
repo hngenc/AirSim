@@ -255,6 +255,7 @@ void MultiRotorConnector::updateRendering(float dt)
         UAirBlueprintLib::LogMessage(TEXT("EnergyConsumed:"), FString::SanitizeFloat(vehicle_.getEnergyConsumed()), LogDebugLevel::Failure);
         UAirBlueprintLib::LogMessage(TEXT("distanceTraveled:"), FString::SanitizeFloat(vehicle_.getDistanceTraveled()), LogDebugLevel::Failure);
         UAirBlueprintLib::LogMessage(TEXT("flightTime:"), FString::SanitizeFloat(vehicle_.getTotalTime()), LogDebugLevel::Failure);
+//        UAirBlueprintLib::LogMessage(TEXT("orientation:"), FString::SanitizeFloat(controller_.getIMUStats().orientation.), LogDebugLevel::Failure);
     }
 }
 

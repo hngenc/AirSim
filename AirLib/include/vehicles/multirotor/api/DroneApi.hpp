@@ -229,6 +229,10 @@ public:
         return controller_->getFlightStats();
     }
     
+    IMUStats getIMUStats()
+    {
+        return controller_->getIMUStats();
+    }
 
     RCData getRCData()
     {

@@ -152,6 +152,12 @@ FlightStats MultirotorRpcLibClient::getFlightStats()
 {
     return static_cast<rpc::client*>(getClient())->call("getFlightStats").as<MultirotorRpcLibAdapators::FlightStats>().to();
 }
+
+IMUStats MultirotorRpcLibClient::getIMUStats()
+{
+    return static_cast<rpc::client*>(getClient())->call("getIMUStats").as<MultirotorRpcLibAdapators::IMUStats>().to();
+}
+
 /*
 float MultirotorRpcLibClient::getVoltage()
 {

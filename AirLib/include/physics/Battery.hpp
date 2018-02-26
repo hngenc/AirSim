@@ -108,13 +108,14 @@ class PowerEstimator {
                          //const Kinematics::State& next) 
                          {
 	//(void)(mass);
-    auto mass = rotor_energy_specs.get_mass();
-    auto vx = current.twist.linear[0];
-    auto vy = current.twist.linear[1];
-    auto vz = current.twist.linear[2];
-    auto ax = current.accelerations.linear[0];
-    auto ay = current.accelerations.linear[1];
-    auto az = current.accelerations.linear[2];
+    //auto mass = rotor_energy_specs.get_mass();
+    auto mass = 0.0;//rotor_energy_specs.get_mass();
+    auto vx = current.twist.linear[0]*3.6;
+    auto vy = current.twist.linear[1]*3.6;
+    auto vz = current.twist.linear[2]*3.6;
+    auto ax = current.accelerations.linear[0]*3.6;
+    auto ay = current.accelerations.linear[1]*3.6;
+    auto az = current.accelerations.linear[2]*3.6;
     
    
 
@@ -210,7 +211,7 @@ class Battery {
   virtual float RealtimeVolatge() {
     // TODO(wcui) Now we simulate a simple constant voltage battery, but in real
     // world, it could be a function of state_of_charge_
-    return nominal_voltage_;
+    return voltage_;
   }
 
  private:
