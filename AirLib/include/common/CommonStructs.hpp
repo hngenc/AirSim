@@ -359,6 +359,7 @@ struct IMUStats{
     Quaternionr orientation;
     Vector3r angular_velocity;
     Vector3r linear_acceleration;
+    uint64_t time_stamp;
 
     
     /* 
@@ -373,9 +374,10 @@ struct IMUStats{
     {}
     
     IMUStats(Quaternionr orientation_val, Vector3r angular_velocity_val, 
-            Vector3r linear_acceleration_val): orientation(orientation_val),
+            Vector3r linear_acceleration_val, uint64_t time_stamp_val): orientation(orientation_val),
                                       angular_velocity(angular_velocity_val),
-                                      linear_acceleration(linear_acceleration_val)
+                                      linear_acceleration(linear_acceleration_val),
+                                      time_stamp(time_stamp_val)
     {}
     /*
     FlightStats(float state_of_charge_val,

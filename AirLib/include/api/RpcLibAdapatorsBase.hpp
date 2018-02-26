@@ -149,17 +149,20 @@ public:
         Quaternionr orientation;
         Vector3r angular_velocity;
         Vector3r linear_acceleration;
+        uint64_t time_stamp;
 
         IMUStats(const msr::airlib::IMUStats& s)
         {
             orientation = s.orientation;
             angular_velocity = s.angular_velocity;
             linear_acceleration = s.linear_acceleration;
+            time_stamp = s.time_stamp;  
         }
 
         MSGPACK_DEFINE_MAP(orientation,
                 angular_velocity,
-                linear_acceleration);
+                linear_acceleration,
+                time_stamp);
 
         IMUStats()
         {}
@@ -178,7 +181,8 @@ public:
         {
             return msr::airlib::IMUStats(orientation.to(),
                     angular_velocity.to(),
-                    linear_acceleration.to());
+                    linear_acceleration.to(),
+                    time_stamp);
         }
     };
 
