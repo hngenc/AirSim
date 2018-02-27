@@ -9,7 +9,9 @@
 #include "Runtime/Core/Public/Misc/Paths.h"
 #include "FileHelper.h"
 #include <string>
-
+#include <codecvt>
+#include <fstream>
+#include <string>
 
 // Sets default values
 ADynamicSpawningObject::ADynamicSpawningObject()
@@ -31,10 +33,20 @@ ADynamicSpawningObject::ADynamicSpawningObject()
 	}
 }
 
+
+
+
 // Called when the game starts or when spawned
 void ADynamicSpawningObject::BeginPlay()
 {
-	path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	std::wstring userProfile = _wgetenv(L"USERPROFILE");
+	std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t> converter;
+	//return converter.to_bytes(userProfile);
+	std::string path2 = (std::string) converter.to_bytes(userProfile) + "\\Documents\\DataGenerationSetting.json";
+	
+	//path = FPaths::GameSourceDir() + "Blocks/setting/DataGenerationSetting.json";
+	
+	path = FString(path2.c_str());
 	FFileHelper::LoadFileToString(JsonString, *path);
 	i = 0;
 	TSharedPtr<FJsonObject> JsonObject;
