@@ -169,7 +169,7 @@ public:
             IMUStats IMU_stats;
             IMU_stats.orientation = getKinematics().pose.orientation;
             IMU_stats.angular_velocity = getKinematics().twist.angular;
-            IMU_stats.linear_acceleration = getKinematics().accelerations.linear;
+			IMU_stats.linear_acceleration = getKinematics().accelerations.linear - getEnvironment().getState().gravity;
             IMU_stats.time_stamp = ClockFactory::get()->nowNanos();;
             getController()->setIMUStats(IMU_stats);
     }
