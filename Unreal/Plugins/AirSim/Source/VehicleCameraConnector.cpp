@@ -66,10 +66,12 @@ msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getSceneCa
     TArray<uint8> image_uint8;
     TArray<float> image_float;
 
+	auto request_timestamp = msr::airlib::ClockFactory::get()->nowNanos();
     request.getScreenshot(textureTarget, image_uint8, image_float, pixels_as_float, compress, width, height);
 
     ImageResponse response;
-    response.time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+	response.time_stamp = request_timestamp;
+	// response.time_stamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     response.image_data_uint8 = std::vector<uint8_t>(image_uint8.GetData(), image_uint8.GetData() + image_uint8.Num());
     response.image_data_float = std::vector<float>(image_float.GetData(), image_float.GetData() + image_float.Num());
 

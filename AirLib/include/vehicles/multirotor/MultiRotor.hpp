@@ -14,6 +14,7 @@
 #include <vector>
 #include "physics/PhysicsBody.hpp"
 #include "common/ClockFactory.hpp"
+#include <fstream>
 
 #ifndef DEFAULT_VOLTAGE
 #define DEFAULT_VOLTAGE (11.1f)
@@ -146,7 +147,18 @@ public:
     virtual void kinematicsUpdated() override
     {
         updateSensors(*params_, getKinematics(), getEnvironment());
+		//static   std::ofstream myfile;
+		//myfile.open("D:\\acceleration_data.txt", std::ios_base::app);
+		//myfile << "----------------" << std::endl;
+		//myfile << "acc w/ gravity"<<getKinematics().accelerations.linear << std::endl;
+		/*
+		myfile << "x" << getKinematics().accelerations.linear[0]
+			<< "y" << getKinematics().accelerations.linear[1]
+			<< "z" << getKinematics().accelerations.linear[2] << std::endl;
+		*/
+		//myfile << "gravity:" << getEnvironment().getState().gravity << std::endl;
 
+		//?myfile.close();
         getController()->update();
 
         //transfer new input values from controller to rotors
@@ -166,12 +178,16 @@ public:
             flight_stats.distance_traveled = getDistanceTraveled();
             getController()->setFlightStats(flight_stats);
         }
-            IMUStats IMU_stats;
-            IMU_stats.orientation = getKinematics().pose.orientation;
-            IMU_stats.angular_velocity = getKinematics().twist.angular;
-			IMU_stats.linear_acceleration = getKinematics().accelerations.linear - getEnvironment().getState().gravity;
-            IMU_stats.time_stamp = ClockFactory::get()->nowNanos();;
-            getController()->setIMUStats(IMU_stats);
+
+		IMUStats IMU_stats;
+		IMU_stats.time_stamp = ClockFactory::get()->nowNanos();
+		IMU_stats.linear_acceleration = getKinematics().accelerations.linear - getEnvironment().getState().gravity;
+        IMU_stats.orientation = getKinematics().pose.orientation;
+        IMU_stats.angular_velocity = getKinematics().twist.angular;
+		// IMU_stats.time_stamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+        getController()->setIMUStats(IMU_stats);
+
+		//	getController()->setGroundTruth(this);
     }
 
     //sensor getter

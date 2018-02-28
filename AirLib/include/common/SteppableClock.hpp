@@ -19,7 +19,8 @@ public:
     SteppableClock(TTimeDelta step = 20E-3f, TTimePoint start = 1000)
         : current_(start), step_(step)
     {
-        current_ = start;
+        // current_ = start;
+		current_ = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 
     TTimePoint stepBy(TTimeDelta amount)
