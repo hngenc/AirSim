@@ -17,6 +17,7 @@ public: //types
         Quaternionr orientation;
         Vector3r angular_velocity;
         Vector3r linear_acceleration;
+		TTimePoint time_stamp = ClockFactory::get()->nowNanos();
     };
 
 

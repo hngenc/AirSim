@@ -3,6 +3,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "TaskGraphInterfaces.h"
 #include "ImageUtils.h"
+#include <atomic>
 
 RenderRequest::RenderRequest(bool use_safe_method)
 {
@@ -18,7 +19,7 @@ RenderRequest::~RenderRequest()
 // read pixels from render target using render thread, then compress the result into PNG
 // argument on the thread that calls this method.
 void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<uint8>& image_data_uint8, 
-    TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height)
+    TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp)
 {
     data->render_target = renderTarget;
     if (!pixels_as_float)
@@ -60,6 +61,7 @@ void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<u
     
     width = data->width;
     height = data->height;
+	timestamp = data->timestamp__;
 
     if (!pixels_as_float) {
         if (data->width != 0 && data->height != 0) {
@@ -100,31 +102,43 @@ void RenderRequest::ExecuteTask()
     {
         FRHICommandListImmediate& RHICmdList = GetImmediateCommandList_ForRenderCommand();
         auto rt_resource = data->render_target->GetRenderTargetResource();
-        if (rt_resource != nullptr) {
+		//uint64 timestamp;
+		if (rt_resource != nullptr) {
             const FTexture2DRHIRef& rhi_texture = rt_resource->GetRenderTargetTexture();
             FIntPoint size;
             auto flags = setupRenderResource(rt_resource, data.get(), size);
 
             //should we be using ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER which was in original commit by @saihv
             //https://github.com/Microsoft/AirSim/pull/162/commits/63e80c43812300a8570b04ed42714a3f6949e63f#diff-56b790f9394f7ca1949ddbb320d8456fR64
-            if (!data->pixels_as_float) {
+			//uint64 blah = msr::airlib::ClockFactory::get()->nowNanos();
+			
+			if (!data->pixels_as_float) {
                 //below is undocumented method that avoids flushing, but it seems to segfault every 2000 or so calls
                 RHICmdList.ReadSurfaceData(
                     rhi_texture,
                     FIntRect(0, 0, size.X, size.Y),
                     data->bmp,
                     flags);
-            }
+				uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+				data->timestamp__ = after_time_stamp;
+			}
             else {
-                RHICmdList.ReadSurfaceFloatData(
+				uint64 before_time_stamp  = msr::airlib::ClockFactory::get()->nowNanos();
+				RHICmdList.ReadSurfaceFloatData(
                     rhi_texture,
                     FIntRect(0, 0, size.X, size.Y),
                     data->bmp_float,
                     CubeFace_PosX, 0, 0
-                );
-            }
-        }
+				);
+          
+				uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+				
+				//if (after_time_stamp - before_time_stamp) > 
+				data->timestamp__ = (before_time_stamp+after_time_stamp)/2;
 
+			}
+        }
+		//data->timestamp__ = timestamp;
         data->signal.signal();
     }
 }

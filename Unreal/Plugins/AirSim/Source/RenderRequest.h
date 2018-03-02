@@ -17,11 +17,13 @@ private:
         bool pixels_as_float;
         bool compress;
         bool use_safe_method;
+		uint64_t timestamp__;
     };
     std::shared_ptr<RenderRequestInfo> data;
-
+	
 private:
     static FReadSurfaceDataFlags setupRenderResource(FTextureRenderTargetResource* rt_resource, RenderRequestInfo* data, FIntPoint& size);
+	
 
 public:
     RenderRequest(bool use_safe_method);
@@ -40,6 +42,6 @@ public:
     // read pixels from render target using render thread, then compress the result into PNG
     // argument on the thread that calls this method.
     void getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<uint8>& image_data_uint8, 
-        TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height);
+        TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp);
     void ExecuteTask();
 };

@@ -179,13 +179,33 @@ public:
             getController()->setFlightStats(flight_stats);
         }
 
+		static RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
+
 		IMUStats IMU_stats;
-		IMU_stats.time_stamp = ClockFactory::get()->nowNanos();
+		//IMU_stats.time_stamp = ClockFactory::get()->nowNanos();
+		/*
 		IMU_stats.linear_acceleration = getKinematics().accelerations.linear - getEnvironment().getState().gravity;
-        IMU_stats.orientation = getKinematics().pose.orientation;
+		
+		
+		//IMU_stats.linear_acceleration += (gauss_dist.next())/10;
+		
+		//IMU_stats.linear_acceleration = VectorMath::transformToBodyFrame(IMU_stats.linear_acceleration,
+		//	ground_truth.kinematics->pose.orientation, true);
+
+		IMU_stats.orientation = getKinematics().pose.orientation;
         IMU_stats.angular_velocity = getKinematics().twist.angular;
+		IMU_stats.angular_velocity += (gauss_dist.next()) / 10;
 		// IMU_stats.time_stamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
         getController()->setIMUStats(IMU_stats);
+		*/
+		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
+		IMU_stats.orientation =imu_->getOutput().orientation;
+		IMU_stats.angular_velocity = imu_->getOutput().angular_velocity;
+		IMU_stats.linear_acceleration = imu_->getOutput().linear_acceleration;
+		IMU_stats.time_stamp = imu_->getOutput().time_stamp;
+
+		getController()->setIMUStats(IMU_stats);
+
 
 		//	getController()->setGroundTruth(this);
     }
@@ -315,6 +335,7 @@ private: //fields
     vector<Rotor> rotors_;
     vector<PhysicsBodyVertex> drag_vertices_;
      EnergyRotorSpecs energy_rotor_specs_;
+	 
 };
 
 }} //namespace
