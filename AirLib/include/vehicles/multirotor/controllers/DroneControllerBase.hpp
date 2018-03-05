@@ -220,7 +220,10 @@ public: //interface for outside world
   
     virtual IMUStats getIMUStats();
     virtual void setIMUStats(const IMUStats& flight_stats);
-    
+
+	virtual GPSStats getGPSStats();
+	virtual void setGPSStats(const GPSStats& flight_stats);
+
     // virtual double getEnergyInfo();
 
 
@@ -351,8 +354,9 @@ private:// vars
     CollisionInfo collision_info_;
     FlightStats flight_stats_;
     IMUStats IMU_stats_;
-
-    // we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
+	GPSStats GPS_stats_;
+    
+	// we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
     // base class method on DroneControllerBase that also grabs the StatusLock.
     std::recursive_mutex status_mutex_;
 };

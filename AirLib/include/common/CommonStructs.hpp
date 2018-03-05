@@ -397,7 +397,22 @@ struct IMUStats{
     */
 };
 
+struct GPSStats {
+	double latitude;
+	double longitude;
+	double altitude;
+	uint64_t time_stamp;
 
+	GPSStats()
+	{}
+
+	GPSStats(double latitude_val, double longitude_val,
+		double altitude_val, uint64_t time_stamp_val) : latitude(latitude_val),
+		longitude(longitude_val),
+		altitude(altitude_val),
+		time_stamp(time_stamp_val)
+	{}
+};
 
 
 }} //namespace

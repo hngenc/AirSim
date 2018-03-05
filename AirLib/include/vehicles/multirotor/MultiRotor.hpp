@@ -182,22 +182,6 @@ public:
 		static RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
 
 		IMUStats IMU_stats;
-		//IMU_stats.time_stamp = ClockFactory::get()->nowNanos();
-		/*
-		IMU_stats.linear_acceleration = getKinematics().accelerations.linear - getEnvironment().getState().gravity;
-		
-		
-		//IMU_stats.linear_acceleration += (gauss_dist.next())/10;
-		
-		//IMU_stats.linear_acceleration = VectorMath::transformToBodyFrame(IMU_stats.linear_acceleration,
-		//	ground_truth.kinematics->pose.orientation, true);
-
-		IMU_stats.orientation = getKinematics().pose.orientation;
-        IMU_stats.angular_velocity = getKinematics().twist.angular;
-		IMU_stats.angular_velocity += (gauss_dist.next()) / 10;
-		// IMU_stats.time_stamp = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
-        getController()->setIMUStats(IMU_stats);
-		*/
 		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
 		IMU_stats.orientation =imu_->getOutput().orientation;
 		IMU_stats.angular_velocity = imu_->getOutput().angular_velocity;
@@ -206,6 +190,14 @@ public:
 
 		getController()->setIMUStats(IMU_stats);
 
+		GPSStats GPS_stats;
+		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorCollection::SensorType::Gps));
+		GPS_stats.latitude = gps_->getOutput().gnss.geo_point.latitude;
+		GPS_stats.longitude = gps_->getOutput().gnss.geo_point.longitude;
+		GPS_stats.altitude = gps_->getOutput().gnss.geo_point.altitude;
+		GPS_stats.time_stamp = gps_->getOutput().time_stamp;
+
+		getController()->setGPSStats(GPS_stats);
 
 		//	getController()->setGroundTruth(this);
     }

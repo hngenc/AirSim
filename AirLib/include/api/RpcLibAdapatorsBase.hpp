@@ -186,6 +186,37 @@ public:
         }
     };
 
+	struct GPSStats {
+		double latitude;
+		double longitude;
+		double altitude;
+		uint64_t time_stamp;
+
+		GPSStats(const msr::airlib::GPSStats& s)
+		{
+			latitude = s.latitude;
+			longitude = s.longitude;
+			altitude = s.altitude;
+			time_stamp = s.time_stamp;
+		}
+
+		MSGPACK_DEFINE_MAP(latitude,
+			longitude,
+			altitude,
+			time_stamp);
+
+		GPSStats()
+		{}
+
+		msr::airlib::GPSStats to() const
+		{
+			return msr::airlib::GPSStats(latitude,
+				longitude,
+				altitude,
+				time_stamp);
+		}
+	};
+
     struct Pose {
         Vector3r position;
         Quaternionr orientation;

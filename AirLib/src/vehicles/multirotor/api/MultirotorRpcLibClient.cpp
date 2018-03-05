@@ -158,6 +158,11 @@ IMUStats MultirotorRpcLibClient::getIMUStats()
     return static_cast<rpc::client*>(getClient())->call("getIMUStats").as<MultirotorRpcLibAdapators::IMUStats>().to();
 }
 
+GPSStats MultirotorRpcLibClient::getGPSStats()
+{
+	return static_cast<rpc::client*>(getClient())->call("getGPSStats").as<MultirotorRpcLibAdapators::GPSStats>().to();
+}
+
 /*
 float MultirotorRpcLibClient::getVoltage()
 {
