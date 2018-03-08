@@ -183,19 +183,21 @@ public:
 
 		IMUStats IMU_stats;
 		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
-		IMU_stats.orientation =imu_->getOutput().orientation;
-		IMU_stats.angular_velocity = imu_->getOutput().angular_velocity;
-		IMU_stats.linear_acceleration = imu_->getOutput().linear_acceleration;
-		IMU_stats.time_stamp = imu_->getOutput().time_stamp;
+		const auto& imu_output = imu_->getOutput();
+		IMU_stats.time_stamp = imu_output.time_stamp;
+		IMU_stats.orientation = imu_output.orientation;
+		IMU_stats.angular_velocity = imu_output.angular_velocity;
+		IMU_stats.linear_acceleration = imu_output.linear_acceleration;
+		IMU_stats.after_time_stamp = imu_output.time_stamp;
 
 		getController()->setIMUStats(IMU_stats);
 
 		GPSStats GPS_stats;
 		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorCollection::SensorType::Gps));
+		GPS_stats.time_stamp = gps_->getOutput().time_stamp;
 		GPS_stats.latitude = gps_->getOutput().gnss.geo_point.latitude;
 		GPS_stats.longitude = gps_->getOutput().gnss.geo_point.longitude;
 		GPS_stats.altitude = gps_->getOutput().gnss.geo_point.altitude;
-		GPS_stats.time_stamp = gps_->getOutput().time_stamp;
 
 		getController()->setGPSStats(GPS_stats);
 

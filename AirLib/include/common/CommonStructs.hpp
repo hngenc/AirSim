@@ -360,7 +360,7 @@ struct IMUStats{
     Vector3r angular_velocity;
     Vector3r linear_acceleration;
     uint64_t time_stamp;
-
+	uint64_t after_time_stamp;
     
     /* 
     float state_of_charge;
@@ -374,27 +374,13 @@ struct IMUStats{
     {}
     
     IMUStats(Quaternionr orientation_val, Vector3r angular_velocity_val, 
-            Vector3r linear_acceleration_val, uint64_t time_stamp_val): orientation(orientation_val),
+            Vector3r linear_acceleration_val, uint64_t time_stamp_val, uint64_t after_time_stamp_val):
+									  orientation(orientation_val),
                                       angular_velocity(angular_velocity_val),
                                       linear_acceleration(linear_acceleration_val),
-                                      time_stamp(time_stamp_val)
+                                      time_stamp(time_stamp_val),
+									  after_time_stamp(after_time_stamp_val)
     {}
-    /*
-    FlightStats(float state_of_charge_val,
-                float voltage_val,
-                float energy_consumed_val,
-                float flight_time_val,
-                float distance_traveled_val,
-                int collision_count_val):
-        state_of_charge(state_of_charge_val), 
-        voltage(voltage_val), 
-        energy_consumed(energy_consumed_val), 
-        flight_time(flight_time_val), 
-        distance_traveled(distance_traveled_val),
-        collision_count(collision_count_val)
-    {
-    }
-    */
 };
 
 struct GPSStats {

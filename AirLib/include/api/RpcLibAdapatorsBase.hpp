@@ -150,6 +150,7 @@ public:
         Vector3r angular_velocity;
         Vector3r linear_acceleration;
         uint64_t time_stamp;
+		uint64_t after_time_stamp;
 
         IMUStats(const msr::airlib::IMUStats& s)
         {
@@ -157,32 +158,25 @@ public:
             angular_velocity = s.angular_velocity;
             linear_acceleration = s.linear_acceleration;
             time_stamp = s.time_stamp;  
+			after_time_stamp = s.after_time_stamp;
         }
 
         MSGPACK_DEFINE_MAP(orientation,
                 angular_velocity,
                 linear_acceleration,
-                time_stamp);
+                time_stamp,
+				after_time_stamp);
 
         IMUStats()
         {}
-        /*
-        FlightStats(const msr::airlib::FlightStats& s)
-        {
-            state_of_charge = s.state_of_charge;
-            voltage = s.voltage;
-            energy_consumed = s.energy_consumed;
-            flight_time = s.flight_time;
-            distance_traveled = s.distance_traveled;
-            collision_count = s.collision_count;
-        }
-        */
+
         msr::airlib::IMUStats to() const
         {
             return msr::airlib::IMUStats(orientation.to(),
                     angular_velocity.to(),
                     linear_acceleration.to(),
-                    time_stamp);
+                    time_stamp,
+					after_time_stamp);
         }
     };
 

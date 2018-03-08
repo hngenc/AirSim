@@ -302,7 +302,7 @@ public:
     }
    */
     
-//#define MAX_FR_MODE
+#define MAX_FR_MODE
 //#define MULTI_THREADED
 #ifdef MAX_FR_MODE
 	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)

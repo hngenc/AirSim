@@ -50,6 +50,7 @@ private: //methods
         Output output;
         const GroundTruth& ground_truth = getGroundTruth();
 
+		output.time_stamp = ClockFactory::get()->nowNanos();
         output.angular_velocity = ground_truth.kinematics->twist.angular;
         output.linear_acceleration = ground_truth.kinematics->accelerations.linear - ground_truth.environment->getState().gravity;
         output.orientation = ground_truth.kinematics->pose.orientation;
@@ -57,7 +58,6 @@ private: //methods
         //acceleration is in world frame so transform to body frame
         output.linear_acceleration = VectorMath::transformToBodyFrame(output.linear_acceleration, 
             ground_truth.kinematics->pose.orientation, true);
-		output.time_stamp = ClockFactory::get()->nowNanos();
         //add noise
         addNoise(output.linear_acceleration, output.angular_velocity);
         // TODO: Add noise in orientation?
