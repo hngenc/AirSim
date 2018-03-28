@@ -221,6 +221,9 @@ public: //interface for outside world
     virtual IMUStats getIMUStats();
     virtual void setIMUStats(const IMUStats& flight_stats);
 
+    virtual IMUStats getIMUStats2();
+    virtual void setIMUStats2(const IMUStats& flight_stats);
+
 	virtual GPSStats getGPSStats();
 	virtual void setGPSStats(const GPSStats& flight_stats);
 

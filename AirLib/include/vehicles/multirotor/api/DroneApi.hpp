@@ -234,6 +234,11 @@ public:
         return controller_->getIMUStats();
     }
 
+    IMUStats getIMUStats2()
+    {
+        return controller_->getIMUStats2();
+    }
+
 	GPSStats getGPSStats()
 	{
 		return controller_->getGPSStats();

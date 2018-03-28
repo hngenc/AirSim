@@ -696,9 +696,19 @@ IMUStats DroneControllerBase::getIMUStats()
     return IMU_stats_;
 }
 
+IMUStats DroneControllerBase::getIMUStats2()
+{
+    return IMU_stats_2;
+}
+
 void DroneControllerBase::setIMUStats(const IMUStats& IMU_stats)
 {
     IMU_stats_ = IMU_stats;
+}
+
+void DroneControllerBase::setIMUStats2(const IMUStats& IMU_stats)
+{
+    IMU_stats_2 = IMU_stats;
 }
 
 GPSStats DroneControllerBase::getGPSStats()

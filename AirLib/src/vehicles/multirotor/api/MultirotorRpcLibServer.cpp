@@ -113,7 +113,11 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(DroneApi* drone, string server_ad
     (static_cast<rpc::server*>(getServer()))->
         bind("getFlightStats", [&]() -> MultirotorRpcLibAdapators::FlightStats { return getDroneApi()->getFlightStats(); });
     (static_cast<rpc::server*>(getServer()))->
+        bind("getGPSStats", [&]() -> MultirotorRpcLibAdapators::GPSStats { return getDroneApi()->getGPSStats(); });
+    (static_cast<rpc::server*>(getServer()))->
         bind("getIMUStats", [&]() -> MultirotorRpcLibAdapators::IMUStats { return getDroneApi()->getIMUStats(); });
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getIMUStats2", [&]() -> MultirotorRpcLibAdapators::IMUStats { return getDroneApi()->getIMUStats2(); });
 
     
     /* 

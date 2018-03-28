@@ -46,6 +46,7 @@ public:
     //CollisionInfo getCollisionInfo();
     FlightStats getFlightStats();
     IMUStats getIMUStats();
+    IMUStats getIMUStats2();
 	GPSStats getGPSStats();
     //float getVoltage();
     Vector3r getVelocity();

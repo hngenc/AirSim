@@ -216,8 +216,10 @@ protected: //static utility functions for derived classes to use
     static void createStandardSensors(vector<unique_ptr<SensorBase>>& sensor_storage, SensorCollection& sensors, const EnabledSensors& enabled_sensors)
     {
         sensor_storage.clear();
-        if (enabled_sensors.imu)
+        if (enabled_sensors.imu) {
             sensors.insert(createSensor<ImuSimple>(sensor_storage), SensorCollection::SensorType::Imu);
+            sensors.insert(createSensor<ImuSimple>(sensor_storage), SensorCollection::SensorType::Imu2);
+        }
         if (enabled_sensors.magnetometer)
             sensors.insert(createSensor<MagnetometerSimple>(sensor_storage), SensorCollection::SensorType::Magnetometer);
         if (enabled_sensors.gps)

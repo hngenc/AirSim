@@ -190,6 +190,15 @@ public:
 
 		getController()->setIMUStats(IMU_stats);
 
+		IMUStats IMU_stats2;
+		const ImuBase* imu2_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu2));
+		IMU_stats2.orientation = imu2_->getOutput().orientation;
+		IMU_stats2.angular_velocity = imu2_->getOutput().angular_velocity;
+		IMU_stats2.linear_acceleration = imu2_->getOutput().linear_acceleration;
+		IMU_stats2.time_stamp = imu2_->getOutput().time_stamp;
+
+		getController()->setIMUStats2(IMU_stats2);
+
 		GPSStats GPS_stats;
 		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorCollection::SensorType::Gps));
 		GPS_stats.latitude = gps_->getOutput().gnss.geo_point.latitude;
