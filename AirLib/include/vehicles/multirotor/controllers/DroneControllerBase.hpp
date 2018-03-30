@@ -357,6 +357,7 @@ private:// vars
     CollisionInfo collision_info_;
     FlightStats flight_stats_;
     IMUStats IMU_stats_;
+    IMUStats IMU_stats_2;
 	GPSStats GPS_stats_;
     
 	// we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
