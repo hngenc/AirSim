@@ -3,12 +3,29 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "TaskGraphInterfaces.h"
 #include "ImageUtils.h"
-#include <atomic>
+
+#include <Python.h>
+#include "controllers/Settings.hpp"
+
+static bool python_setup = true; //false;
+static bool python_works = false; // true;
+static PyObject * pModule;
+static PyObject *pNoiseFunc;
+const std::string module_name = "camera_noise";
 
 RenderRequest::RenderRequest(bool use_safe_method)
 {
     data = std::make_shared<RenderRequestInfo>();
     data->use_safe_method = use_safe_method;
+
+	if (!python_setup) {
+		python_setup = true;
+
+		auto& settings = Settings::singleton();
+		settings.initializePython();
+
+		SetupPythonNoise();
+	}
 }
 RenderRequest::~RenderRequest()
 {
@@ -19,8 +36,13 @@ RenderRequest::~RenderRequest()
 // read pixels from render target using render thread, then compress the result into PNG
 // argument on the thread that calls this method.
 void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<uint8>& image_data_uint8, 
-    TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp)
+    TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp, bool noisy, bool dead)
 {
+	auto end = std::chrono::system_clock::now();
+	auto start_noise = std::chrono::system_clock::now();
+	auto end_noise = std::chrono::system_clock::now();
+	auto start = std::chrono::system_clock::now();
+
     data->render_target = renderTarget;
     if (!pixels_as_float)
         data->bmp.Reset();
@@ -65,6 +87,54 @@ void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<u
 
     if (!pixels_as_float) {
         if (data->width != 0 && data->height != 0) {
+			if (dead) {
+				static std::random_device rd{};
+				static std::mt19937 gen{ rd() };
+
+				for (auto& item : data->bmp) {
+					std::uniform_int_distribution<int> dist(0, 256);
+
+					item.R = dist(gen);
+					item.G = dist(gen);
+					item.B = dist(gen);
+					item.A = dist(gen);
+				}
+			}
+			else if (noisy) {
+				// AddPythonNoise(data->bmp);
+
+				start_noise = std::chrono::system_clock::now();
+
+				static std::random_device rd{};
+				static std::mt19937 gen{ rd() };
+
+				for (auto& item : data->bmp) {
+					// divide by 10 to get meters
+					float depth = ((float) item.R);
+
+					float real_depth = depth / 10.0f;
+					float noise = 0.0f;
+					float sd;
+					if (real_depth < 6.0f) {
+						sd = real_depth * 0.0035 - 0.0023;
+					}
+					else {
+						sd = real_depth * 0.0657 - 0.4193;
+					}
+					sd = (sd < 0.0f) ? 0.0f : sd;
+					std::normal_distribution<float> d(0.0f, sd);
+					real_depth += d(gen);
+
+					depth = real_depth * 10.0f;
+					// clamp depth to uint8 range before conversion
+					depth = depth < 0.0f ? 0.0f :
+						depth > 255.0f ? 255.0f : depth;
+					item.R = (uint8) depth;
+				}
+
+				end_noise = std::chrono::system_clock::now();
+			}
+
             if (data->compress)
                 FImageUtils::CompressImageArray(data->width, data->height, data->bmp, image_data_uint8);
             else {
@@ -83,6 +153,16 @@ void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<u
             image_data_float.Add(fval);
         }
     }
+
+	end = std::chrono::system_clock::now();
+
+	volatile auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+	volatile auto noise_diff = std::chrono::duration_cast<std::chrono::microseconds>(end_noise - start_noise).count();
+	++diff;
+	++noise_diff;
+	--diff;
+	--noise_diff;
+	return;
 }
 
 FReadSurfaceDataFlags RenderRequest::setupRenderResource(FTextureRenderTargetResource* rt_resource, RenderRequestInfo* data, FIntPoint& size)
@@ -114,13 +194,14 @@ void RenderRequest::ExecuteTask()
 			
 			if (!data->pixels_as_float) {
                 //below is undocumented method that avoids flushing, but it seems to segfault every 2000 or so calls
+				uint64 before_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
                 RHICmdList.ReadSurfaceData(
                     rhi_texture,
                     FIntRect(0, 0, size.X, size.Y),
                     data->bmp,
                     flags);
-				uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
-				data->timestamp__ = after_time_stamp;
+				// uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+				data->timestamp__ = before_time_stamp;
 			}
             else {
 				uint64 before_time_stamp  = msr::airlib::ClockFactory::get()->nowNanos();
@@ -131,14 +212,55 @@ void RenderRequest::ExecuteTask()
                     CubeFace_PosX, 0, 0
 				);
           
-				uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
+				// uint64 after_time_stamp = msr::airlib::ClockFactory::get()->nowNanos();
 				
 				//if (after_time_stamp - before_time_stamp) > 
-				data->timestamp__ = (before_time_stamp+after_time_stamp)/2;
+				// data->timestamp__ = (before_time_stamp+after_time_stamp)/2;
+				data->timestamp__ = before_time_stamp;
 
 			}
         }
 		//data->timestamp__ = timestamp;
         data->signal.signal();
     }
+}
+
+void RenderRequest::SetupPythonNoise() {
+	PyObject *pName;
+	pName = PyUnicode_FromString(module_name.c_str());
+
+	pModule = PyImport_Import(pName);
+
+	if (pModule != NULL) {
+		pNoiseFunc = PyObject_GetAttrString(pModule, "depth_noise");
+		if (!(pNoiseFunc && PyCallable_Check(pNoiseFunc))) {
+			//can't do it
+			python_works = false;
+		}
+	}
+	else {
+		//can't do it
+		python_works = false;
+		PyErr_Print();
+	}
+}
+
+void RenderRequest::AddPythonNoise(TArray<FColor>& bmp)
+{
+	for (auto& item : data->bmp) {
+		PyObject * pArgs = PyTuple_New(1); // adding noise to x, y, z acceleration
+
+		PyObject *pValue0 = PyFloat_FromDouble(double(item.R) / 10.0);
+		PyTuple_SetItem(pArgs, 0, pValue0);
+		
+		// Returns tuple of three ordered values
+		PyObject * pValue = PyObject_CallObject(pNoiseFunc, pArgs);
+		if (pValue != NULL) {
+			item.R = (uint8_t)(PyFloat_AsDouble(PyTuple_GetItem(pValue, 0)) * 10.0);
+			Py_DECREF(pValue);
+		}
+
+		Py_DECREF(pArgs);
+		Py_DECREF(pValue0);
+	}
 }

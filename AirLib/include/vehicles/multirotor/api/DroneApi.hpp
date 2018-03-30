@@ -301,8 +301,18 @@ public:
         return response;
     }
    */
-    
-#define MAX_FR_MODE
+
+
+static bool file_exists(const char * name) {
+	FILE * file = fopen(name, "r");
+	if (file) {
+		fclose(file);
+		return true;
+	}
+	return false;
+}
+
+//#define MAX_FR_MODE
 //#define MULTI_THREADED
 #ifdef MAX_FR_MODE
 	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)
@@ -392,9 +402,16 @@ public:
 		response.push_back(item_response_2);
 #else
 		for (const auto& item : request_in) {
+			bool dead = false;
+
+			if (item.camera_id == 1) {
+				if (file_exists("C:\\Users\\root\\Documents\\AirSim\\killcam")) {
+					dead = true;
+				}
+			}
 
 			VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
-			const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
+			const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress, dead);
 			response.push_back(item_response);
 		}
 

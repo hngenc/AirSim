@@ -290,6 +290,8 @@ private:
                 const Vector3r drag_force = vertex.getNormal() * (- vertex.getDragFactor() * air_density * vel_comp * vel_comp);
                 const Vector3r drag_torque = vertex.getPosition().cross(drag_force);
 
+				//drag_force.z() = 0;
+
                 wrench.force += drag_force;
                 wrench.torque += drag_torque;
             }
@@ -355,6 +357,7 @@ private:
             //To find the drag force, we find the magnitude in the body frame and unit vector direction in world frame
             avg_linear = current.twist.linear + current.accelerations.linear * (0.5f * dt_real);
             avg_angular = current.twist.angular + current.accelerations.angular * (0.5f * dt_real);
+
             const Wrench drag_wrench = getDragWrench(body, current.pose.orientation, avg_linear, avg_angular);
 
             next_wrench = body_wrench + drag_wrench;

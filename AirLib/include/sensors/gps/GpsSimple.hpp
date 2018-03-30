@@ -12,6 +12,14 @@
 #include "common/FrequencyLimiter.hpp"
 #include "common/DelayLine.hpp"
 
+static bool file_exists_gps(const char * name) {
+	FILE * file = fopen(name, "r");
+	if (file) {
+		fclose(file);
+		return true;
+	}
+	return false;
+}
 
 namespace msr { namespace airlib {
 
@@ -56,6 +64,9 @@ public: //methods
         }
 
         delay_line_.update();
+
+		if (file_exists_gps("C:\\Users\\root\\Documents\\AirSim\\killgps"))
+			return;
 
         if (freq_limiter_.isWaitComplete())
             setOutput(delay_line_.getOutput());

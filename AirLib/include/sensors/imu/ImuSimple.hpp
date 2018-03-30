@@ -8,6 +8,18 @@
 #include "common/Common.hpp"
 #include "ImuSimpleParams.hpp"
 #include "ImuBase.hpp"
+#include <Python.h>
+#include "controllers/Settings.hpp"
+#include <chrono>
+
+static bool file_exists_imu(const char * name) {
+	FILE * file = fopen(name, "r");
+	if (file) {
+		fclose(file);
+		return true;
+	}
+	return false;
+}
 
 namespace msr { namespace airlib {
 
@@ -19,6 +31,10 @@ public:
     {
         gyro_bias_stability_norm = params_.gyro.bias_stability / sqrt(params_.gyro.tau);
         accel_bias_stability_norm = params_.accel.bias_stability / sqrt(params_.accel.tau);
+
+		auto& settings = Settings::singleton();
+		settings.initializePython();
+		SetupPythonNoise();
     }
 
     //*** Start: UpdatableState implementation ***//
@@ -42,11 +58,20 @@ public:
     }
     //*** End: UpdatableState implementation ***//
 
-    virtual ~ImuSimple() = default;
+    // virtual ~ImuSimple() = default;
+
+	virtual ~ImuSimple() {
+		if (python_works) {
+			Py_XDECREF(pNoiseFunc);
+			Py_DECREF(pModule);
+		}
+	}
 
 private: //methods
     void updateOutput()
     {
+		// auto start = std::chrono::system_clock::now();
+
         Output output;
         const GroundTruth& ground_truth = getGroundTruth();
 
@@ -59,11 +84,76 @@ private: //methods
         output.linear_acceleration = VectorMath::transformToBodyFrame(output.linear_acceleration, 
             ground_truth.kinematics->pose.orientation, true);
         //add noise
-        addNoise(output.linear_acceleration, output.angular_velocity);
+
+		// auto start_noise = std::chrono::system_clock::now();
+		/*if (!python_works)
+			addNoise(output.linear_acceleration, output.angular_velocity);
+		else
+			AddPythonNoise(output);*/
+		// auto end_noise = std::chrono::system_clock::now();
         // TODO: Add noise in orientation?
 
-        setOutput(output);
+		if (!file_exists_imu("C:\\Users\\root\\Documents\\AirSim\\killimu"))
+			setOutput(output);
+
+		auto end = std::chrono::system_clock::now();
+
+		// volatile auto diff = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+		// volatile auto noise_diff = std::chrono::duration_cast<std::chrono::microseconds>(end_noise - start_noise).count();
+
+		// diff++;
+		// noise_diff++;
     }
+
+	void SetupPythonNoise() {
+		PyObject *pName;
+		pName = PyUnicode_FromString(module_name.c_str());
+		// Error checking of pName left out
+
+		pModule = PyImport_Import(pName);
+
+		Py_DECREF(pName);
+		if (pModule != NULL) {
+			pNoiseFunc = PyObject_GetAttrString(pModule, "imu_noise");
+			if (!(pNoiseFunc && PyCallable_Check(pNoiseFunc))) {
+				//can't do it
+				python_works = false;
+			}
+		}
+		else {
+			//can't do it
+			python_works = false;
+			PyErr_Print();
+		}
+	}
+
+	void AddPythonNoise(Output& output) {
+		PyObject * pArgs = PyTuple_New(3); // adding noise to x, y, z acceleration
+
+		PyObject *pValue0 = PyFloat_FromDouble(output.linear_acceleration.x());
+		PyTuple_SetItem(pArgs, 0, pValue0);
+		PyObject *pValue2 = PyFloat_FromDouble(output.linear_acceleration.y());
+		PyTuple_SetItem(pArgs, 1, pValue2);
+		PyObject *pValue3 = PyFloat_FromDouble(output.linear_acceleration.z());
+		PyTuple_SetItem(pArgs, 2, pValue3);
+
+		// Returns tuple of three ordered values
+		PyObject * pValue = PyObject_CallObject(pNoiseFunc, pArgs);
+		if (pValue == NULL) {
+			//function call failed; return orig output
+			return;
+		}
+
+		output.linear_acceleration.x() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 0));
+		output.linear_acceleration.y() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 1));
+		output.linear_acceleration.z() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 2));
+
+		Py_DECREF(pArgs);
+		Py_DECREF(pValue);
+		Py_DECREF(pValue0);
+		Py_DECREF(pValue2);
+		Py_DECREF(pValue3);
+	}
 
     void addNoise(Vector3r& linear_acceleration, Vector3r& angular_velocity)
     {
@@ -91,8 +181,6 @@ private: //methods
         state_.accelerometer_bias += gauss_dist.next() * accel_sigma_bias;
     }
 
-
-
 private: //fields
     ImuSimpleParams params_;
     RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
@@ -106,6 +194,10 @@ private: //fields
     } state_;
 
     TTimePoint last_time_;
+
+	bool python_works = true;
+	PyObject *pNoiseFunc, *pModule;
+	const std::string module_name = "sensor_noise";
 };
 
 

@@ -57,7 +57,7 @@ public: //types
     };
 
 public: //methods
-    virtual ImageResponse getImage(ImageType image_type, bool pixels_as_float, bool compress) = 0;
+    virtual ImageResponse getImage(ImageType image_type, bool pixels_as_float, bool compress, bool dead) = 0;
 };
 
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <random>
+
 #include "CoreMinimal.h"
 #include "common/common_utils/WorkerThread.hpp"
 
@@ -24,6 +26,8 @@ private:
 private:
     static FReadSurfaceDataFlags setupRenderResource(FTextureRenderTargetResource* rt_resource, RenderRequestInfo* data, FIntPoint& size);
 	
+	void SetupPythonNoise();
+	void AddPythonNoise(TArray<FColor>& bmp);
 
 public:
     RenderRequest(bool use_safe_method);
@@ -42,6 +46,6 @@ public:
     // read pixels from render target using render thread, then compress the result into PNG
     // argument on the thread that calls this method.
     void getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<uint8>& image_data_uint8, 
-        TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp);
+        TArray<float>& image_data_float, bool pixels_as_float, bool compress, int& width, int& height, uint64_t& timestamp, bool noisy, bool dead);
     void ExecuteTask();
 };

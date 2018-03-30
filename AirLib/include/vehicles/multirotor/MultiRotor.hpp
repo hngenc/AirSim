@@ -142,6 +142,15 @@ public:
     }
     //*** End: UpdatableState implementation ***//
 
+	static bool file_exists(const char * name) {
+		FILE * file = fopen(name, "r");
+		if (file) {
+			fclose(file);
+			return true;
+		}
+		return false;
+	}
+
 
     //implement abstract methods from PhysicsBody
     virtual void kinematicsUpdated() override
@@ -163,8 +172,14 @@ public:
 
         //transfer new input values from controller to rotors
         for (uint rotor_index = 0; rotor_index < rotors_.size(); ++rotor_index) {
-            rotors_.at(rotor_index).setControlSignal(
-                getController()->getVertexControlSignal(rotor_index));
+			if (rotor_index == 0 && file_exists("C:\\Users\\root\\Documents\\AirSim\\killmotor"))
+			{
+				rotors_.at(rotor_index).setControlSignal(0);;
+			}
+			else {
+				rotors_.at(rotor_index).setControlSignal(
+					getController()->getVertexControlSignal(rotor_index));
+			}
         }
 
         // wcui: update battery info after kinematics is updated
@@ -185,6 +200,7 @@ public:
 		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
 		const auto& imu_output = imu_->getOutput();
 		IMU_stats.time_stamp = imu_output.time_stamp;
+		// IMU_stats.time_stamp = getTotalTime()*1e9 + this->first_time;
 		IMU_stats.orientation = imu_output.orientation;
 		IMU_stats.angular_velocity = imu_output.angular_velocity;
 		IMU_stats.linear_acceleration = imu_output.linear_acceleration;

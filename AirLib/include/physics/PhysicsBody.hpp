@@ -314,6 +314,7 @@ public: //methods
 public:
     //for use in physics angine: //TODO: use getter/setter or friend method?
     TTimePoint last_kinematics_time;
+	uint64_t first_time = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 
 private:
     real_T mass_, mass_inv_;
