@@ -48,7 +48,7 @@ public:
 
         for (const auto& item : request) {
             VehicleCameraBase* camera = car_pawn_->getVehiclePawnWrapper()->getCameraConnector(item.camera_id);
-            const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
+            const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress, false);
             response.push_back(item_response);
         }
 

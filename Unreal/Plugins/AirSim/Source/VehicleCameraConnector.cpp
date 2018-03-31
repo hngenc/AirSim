@@ -3,7 +3,7 @@
 #include "ImageUtils.h"
 #include "common/ClockFactory.hpp"
 #include "NedTransform.h"
-
+#include "VehiclePawnWrapper.h"
 
 VehicleCameraConnector::VehicleCameraConnector(APIPCamera* camera) 
     : camera_(camera)
@@ -15,7 +15,7 @@ VehicleCameraConnector::VehicleCameraConnector(APIPCamera* camera)
 VehicleCameraConnector::~VehicleCameraConnector()
 {}
 
-msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getImage(VehicleCameraConnector::ImageType image_type, bool pixels_as_float, bool compress)
+msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getImage(VehicleCameraConnector::ImageType image_type, bool pixels_as_float, bool compress, bool dead)
 {
 
     if (camera_== nullptr) {
@@ -24,11 +24,11 @@ msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getImage(V
         return response;
     }
 
-    return getSceneCaptureImage(image_type, pixels_as_float, compress, false);
+    return getSceneCaptureImage(image_type, pixels_as_float, compress, false, dead);
 }
 
 msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getSceneCaptureImage(VehicleCameraConnector::ImageType image_type, 
-    bool pixels_as_float, bool compress, bool use_safe_method)
+    bool pixels_as_float, bool compress, bool use_safe_method, bool dead)
 {
     bool visibilityChanged = false;
     if (! camera_->getCameraTypeEnabled(image_type)) {
@@ -66,9 +66,10 @@ msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getSceneCa
     TArray<uint8> image_uint8;
     TArray<float> image_float;
 	uint64_t request_timestamp = 0;
+	bool noisy = false; // (image_type == ImageType::DepthPlanner);
 
 	// auto request_timestamp = msr::airlib::ClockFactory::get()->nowNanos();
-    request.getScreenshot(textureTarget, image_uint8, image_float, pixels_as_float, compress, width, height, request_timestamp);
+    request.getScreenshot(textureTarget, image_uint8, image_float, pixels_as_float, compress, width, height, request_timestamp, noisy, dead);
 
     ImageResponse response;
 	response.time_stamp = request_timestamp;

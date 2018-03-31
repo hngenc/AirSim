@@ -223,19 +223,19 @@ static std::string change_level_to() {
 static void ExecScriptingCommands(ASimModeWorldMultiRotor * simModeWorldMultiRotor) {
 	UWorld * world = simModeWorldMultiRotor->GetWorld();
 
-	std::string new_level = change_level_to();
+	/*std::string new_level = change_level_to();
 	if (!new_level.empty()) {
 		UGameplayStatics::OpenLevel(simModeWorldMultiRotor, new_level.c_str(), false);
-	}
+	}*/
 
 	if (time_to_restart()) {
 		UGameplayStatics::OpenLevel(simModeWorldMultiRotor, FName(*world->GetName()), false);
 	}
 
-	if (time_to_exit()) {
+	/*if (time_to_exit()) {
 		APlayerController* PController = UGameplayStatics::GetPlayerController(world, 0);
 		PController->ConsoleCommand(TEXT("exit"));
-	}
+	}*/
 }
 
 

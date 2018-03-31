@@ -12,11 +12,11 @@ public:
 
     VehicleCameraConnector(APIPCamera* camera);
     virtual ~VehicleCameraConnector();
-    virtual ImageResponse getImage(ImageType image_type, bool pixels_as_float, bool compress) override;
+    virtual ImageResponse getImage(ImageType image_type, bool pixels_as_float, bool compress, bool dead) override;
 
 private:
     msr::airlib::VehicleCameraBase::ImageResponse getSceneCaptureImage(ImageType image_type, 
-        bool pixels_as_float, bool compress, bool use_safe_method);
+        bool pixels_as_float, bool compress, bool use_safe_method, bool dead);
 
     void addScreenCaptureHandler(UWorld *world);
     bool getScreenshotScreen(ImageType image_type, std::vector<uint8_t>& compressedPng);

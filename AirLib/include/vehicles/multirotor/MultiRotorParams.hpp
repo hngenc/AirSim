@@ -218,7 +218,7 @@ protected: //static utility functions for derived classes to use
         sensor_storage.clear();
         if (enabled_sensors.imu) {
             sensors.insert(createSensor<ImuSimple>(sensor_storage), SensorCollection::SensorType::Imu);
-            sensors.insert(createSensor<ImuSimple>(sensor_storage), SensorCollection::SensorType::Imu2);
+            sensors.insert(createSensor<ImuSimple2>(sensor_storage), SensorCollection::SensorType::Imu2);
         }
         if (enabled_sensors.magnetometer)
             sensors.insert(createSensor<MagnetometerSimple>(sensor_storage), SensorCollection::SensorType::Magnetometer);
