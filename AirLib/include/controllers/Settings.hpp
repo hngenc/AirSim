@@ -16,11 +16,9 @@ STRICT_MODE_ON
 #include <mutex>
 #include "common/common_utils/Utils.hpp"
 #include "common/common_utils/FileSystem.hpp"
-#include <Python.h>
 #include <stdio.h>
 
 namespace msr { namespace airlib {
-
 class Settings {
 private:
     std::string file_;
@@ -224,16 +222,6 @@ public:
     {
         doc_[name] = value.doc_;
     }
-
-	void initializePython() {
-		static bool already_done = false;
-
-		if (already_done)
-			return;
-
-		already_done = true;
-		Py_Initialize();
-	}
 };
 
 }} //namespace

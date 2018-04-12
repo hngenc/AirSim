@@ -39,6 +39,7 @@ public:
 
 public: //interface
     VehiclePawnWrapper();
+	~VehiclePawnWrapper();
     void initialize(APawn* pawn, const std::vector<APIPCamera*>& cameras);
 
     void reset();

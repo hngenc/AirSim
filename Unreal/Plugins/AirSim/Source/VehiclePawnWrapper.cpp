@@ -6,7 +6,7 @@
 #include "AirBlueprintLib.h"
 #include "common/ClockFactory.hpp"
 #include "NedTransform.h"
-
+#include "common/CommonPython.hpp"
 
 VehiclePawnWrapper::VehiclePawnWrapper()
 {
@@ -15,6 +15,13 @@ VehiclePawnWrapper::VehiclePawnWrapper()
         collision_display_template = collision_display.Object;
     else
         collision_display_template = nullptr;
+
+	initializePython();
+}
+
+VehiclePawnWrapper::~VehiclePawnWrapper()
+{
+	finalizePython();
 }
 
 void VehiclePawnWrapper::setupCamerasFromSettings()

@@ -8,8 +8,7 @@
 #include "common/Common.hpp"
 #include "ImuSimpleParams.hpp"
 #include "ImuBase.hpp"
-#include <Python.h>
-#include "controllers/Settings.hpp"
+#include "common/CommonPython.hpp"
 #include <chrono>
 
 static bool file_exists_imu(const char * name) {
@@ -32,8 +31,8 @@ public:
         gyro_bias_stability_norm = params_.gyro.bias_stability / sqrt(params_.gyro.tau);
         accel_bias_stability_norm = params_.accel.bias_stability / sqrt(params_.accel.tau);
 
-		auto& settings = Settings::singleton();
-		settings.initializePython();
+		// Py_Initialize();
+		initializePython();
 		SetupPythonNoise();
     }
 
@@ -63,8 +62,10 @@ public:
 	virtual ~ImuSimple() {
 		if (python_works) {
 			Py_XDECREF(pNoiseFunc);
-			Py_DECREF(pModule);
 		}
+		// Py_Finalize();
+		debug = finalizePython();
+		std::cout << debug << std::endl;
 	}
 
 private: //methods
@@ -86,10 +87,10 @@ private: //methods
         //add noise
 
 		// auto start_noise = std::chrono::system_clock::now();
-		/*if (!python_works)
+		if (!python_works)
 			addNoise(output.linear_acceleration, output.angular_velocity);
 		else
-			AddPythonNoise(output);*/
+			AddPythonNoise(output);
 		// auto end_noise = std::chrono::system_clock::now();
         // TODO: Add noise in orientation?
 
@@ -106,53 +107,37 @@ private: //methods
     }
 
 	void SetupPythonNoise() {
-		PyObject *pName;
-		pName = PyUnicode_FromString(module_name.c_str());
-		// Error checking of pName left out
-
-		pModule = PyImport_Import(pName);
-
-		Py_DECREF(pName);
-		if (pModule != NULL) {
-			pNoiseFunc = PyObject_GetAttrString(pModule, "imu_noise");
-			if (!(pNoiseFunc && PyCallable_Check(pNoiseFunc))) {
-				//can't do it
-				python_works = false;
-			}
-		}
-		else {
-			//can't do it
-			python_works = false;
-			PyErr_Print();
-		}
+		pNoiseFunc = getNoiseFunc("imu_noise");
+		python_works = (pNoiseFunc != nullptr);
 	}
 
 	void AddPythonNoise(Output& output) {
+		python_lock();
+
 		PyObject * pArgs = PyTuple_New(3); // adding noise to x, y, z acceleration
 
 		PyObject *pValue0 = PyFloat_FromDouble(output.linear_acceleration.x());
 		PyTuple_SetItem(pArgs, 0, pValue0);
-		PyObject *pValue2 = PyFloat_FromDouble(output.linear_acceleration.y());
-		PyTuple_SetItem(pArgs, 1, pValue2);
-		PyObject *pValue3 = PyFloat_FromDouble(output.linear_acceleration.z());
-		PyTuple_SetItem(pArgs, 2, pValue3);
+		PyObject *pValue1 = PyFloat_FromDouble(output.linear_acceleration.y());
+		PyTuple_SetItem(pArgs, 1, pValue1);
+		PyObject *pValue2 = PyFloat_FromDouble(output.linear_acceleration.z());
+		PyTuple_SetItem(pArgs, 2, pValue2);
 
 		// Returns tuple of three ordered values
 		PyObject * pValue = PyObject_CallObject(pNoiseFunc, pArgs);
-		if (pValue == NULL) {
-			//function call failed; return orig output
-			return;
+		if (pValue != NULL) {
+			output.linear_acceleration.x() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 0));
+			output.linear_acceleration.y() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 1));
+			output.linear_acceleration.z() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 2));
 		}
 
-		output.linear_acceleration.x() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 0));
-		output.linear_acceleration.y() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 1));
-		output.linear_acceleration.z() = PyFloat_AsDouble(PyTuple_GetItem(pValue, 2));
-
 		Py_DECREF(pArgs);
-		Py_DECREF(pValue);
+		Py_XDECREF(pValue);
 		Py_DECREF(pValue0);
+		Py_DECREF(pValue1);
 		Py_DECREF(pValue2);
-		Py_DECREF(pValue3);
+
+		python_unlock();
 	}
 
     void addNoise(Vector3r& linear_acceleration, Vector3r& angular_velocity)
@@ -196,8 +181,8 @@ private: //fields
     TTimePoint last_time_;
 
 	bool python_works = true;
-	PyObject *pNoiseFunc, *pModule;
-	const std::string module_name = "sensor_noise";
+	PyObject *pNoiseFunc = nullptr;
+	int debug = -1;
 };
 
 

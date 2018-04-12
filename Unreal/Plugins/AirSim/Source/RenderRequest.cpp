@@ -3,29 +3,17 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "TaskGraphInterfaces.h"
 #include "ImageUtils.h"
+#include "common/CommonPython.hpp"
 
-#include <Python.h>
-#include "controllers/Settings.hpp"
-
-static bool python_setup = true; //false;
-static bool python_works = false; // true;
-static PyObject * pModule;
-static PyObject *pNoiseFunc;
-const std::string module_name = "camera_noise";
+static bool python_works = true;
+static PyObject *pNoiseFunc = nullptr;
 
 RenderRequest::RenderRequest(bool use_safe_method)
 {
     data = std::make_shared<RenderRequestInfo>();
     data->use_safe_method = use_safe_method;
 
-	if (!python_setup) {
-		python_setup = true;
-
-		auto& settings = Settings::singleton();
-		settings.initializePython();
-
-		SetupPythonNoise();
-	}
+	SetupPythonNoise();
 }
 RenderRequest::~RenderRequest()
 {
@@ -101,35 +89,37 @@ void RenderRequest::getScreenshot(UTextureRenderTarget2D* renderTarget, TArray<u
 				}
 			}
 			else if (noisy) {
-				// AddPythonNoise(data->bmp);
-
 				start_noise = std::chrono::system_clock::now();
 
-				static std::random_device rd{};
-				static std::mt19937 gen{ rd() };
+				if (python_works)
+					AddPythonNoise(data->bmp);
+				else {
+					static std::random_device rd{};
+					static std::mt19937 gen{ rd() };
 
-				for (auto& item : data->bmp) {
-					// divide by 10 to get meters
-					float depth = ((float) item.R);
+					for (auto& item : data->bmp) {
+						// divide by 10 to get meters
+						float depth = ((float)item.R);
 
-					float real_depth = depth / 10.0f;
-					float noise = 0.0f;
-					float sd;
-					if (real_depth < 6.0f) {
-						sd = real_depth * 0.0035 - 0.0023;
+						float real_depth = depth / 10.0f;
+						float noise = 0.0f;
+						float sd;
+						if (real_depth < 6.0f) {
+							sd = real_depth * 0.0035 - 0.0023;
+						}
+						else {
+							sd = real_depth * 0.0657 - 0.4193;
+						}
+						sd = (sd < 0.0f) ? 0.0f : sd;
+						std::normal_distribution<float> d(0.0f, sd);
+						real_depth += d(gen);
+
+						depth = real_depth * 10.0f;
+						// clamp depth to uint8 range before conversion
+						depth = depth < 0.0f ? 0.0f :
+							depth > 255.0f ? 255.0f : depth;
+						item.R = (uint8)depth;
 					}
-					else {
-						sd = real_depth * 0.0657 - 0.4193;
-					}
-					sd = (sd < 0.0f) ? 0.0f : sd;
-					std::normal_distribution<float> d(0.0f, sd);
-					real_depth += d(gen);
-
-					depth = real_depth * 10.0f;
-					// clamp depth to uint8 range before conversion
-					depth = depth < 0.0f ? 0.0f :
-						depth > 255.0f ? 255.0f : depth;
-					item.R = (uint8) depth;
 				}
 
 				end_noise = std::chrono::system_clock::now();
@@ -226,41 +216,38 @@ void RenderRequest::ExecuteTask()
 }
 
 void RenderRequest::SetupPythonNoise() {
-	PyObject *pName;
-	pName = PyUnicode_FromString(module_name.c_str());
-
-	pModule = PyImport_Import(pName);
-
-	if (pModule != NULL) {
-		pNoiseFunc = PyObject_GetAttrString(pModule, "depth_noise");
-		if (!(pNoiseFunc && PyCallable_Check(pNoiseFunc))) {
-			//can't do it
-			python_works = false;
-		}
-	}
-	else {
-		//can't do it
-		python_works = false;
-		PyErr_Print();
-	}
+	pNoiseFunc = getDepthNoiseFunc();
+	python_works = (pNoiseFunc != nullptr);
 }
+
+int debug = 0;
 
 void RenderRequest::AddPythonNoise(TArray<FColor>& bmp)
 {
-	for (auto& item : data->bmp) {
+	for (auto& item : bmp) {
+		python_lock();
+
 		PyObject * pArgs = PyTuple_New(1); // adding noise to x, y, z acceleration
 
 		PyObject *pValue0 = PyFloat_FromDouble(double(item.R) / 10.0);
 		PyTuple_SetItem(pArgs, 0, pValue0);
-		
+	
 		// Returns tuple of three ordered values
 		PyObject * pValue = PyObject_CallObject(pNoiseFunc, pArgs);
+
 		if (pValue != NULL) {
-			item.R = (uint8_t)(PyFloat_AsDouble(PyTuple_GetItem(pValue, 0)) * 10.0);
+			uint8_t val = (uint8_t)(PyFloat_AsDouble(pValue) * 10.0);
+			item.R = item.G = item.B = val;
 			Py_DECREF(pValue);
+		}
+		else {
+			debug++;
+			std::cout << debug << std::endl;
 		}
 
 		Py_DECREF(pArgs);
 		Py_DECREF(pValue0);
+
+		python_unlock();
 	}
 }

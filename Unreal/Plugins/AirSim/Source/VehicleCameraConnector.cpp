@@ -66,7 +66,7 @@ msr::airlib::VehicleCameraBase::ImageResponse VehicleCameraConnector::getSceneCa
     TArray<uint8> image_uint8;
     TArray<float> image_float;
 	uint64_t request_timestamp = 0;
-	bool noisy = false; // (image_type == ImageType::DepthPlanner);
+	bool noisy = (image_type == ImageType::DepthPlanner);
 
 	// auto request_timestamp = msr::airlib::ClockFactory::get()->nowNanos();
     request.getScreenshot(textureTarget, image_uint8, image_float, pixels_as_float, compress, width, height, request_timestamp, noisy, dead);
