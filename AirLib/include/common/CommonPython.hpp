@@ -4,8 +4,6 @@
 #include <Python.h>
 #include <string>
 
-extern PyObject * pModule;
-
 void initializePython();
 int finalizePython();
 

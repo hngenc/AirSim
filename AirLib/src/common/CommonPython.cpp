@@ -4,7 +4,7 @@
 #include <mutex>
 
 static const std::string module_name = "sensor_noise";
-PyObject * pModule = nullptr;
+static PyObject * pModule = nullptr;
 
 static PyObject * pDepthNoiseFunc = nullptr;
 static bool depthNoiseFuncInitialized = false;
@@ -19,10 +19,10 @@ static int sensors_exited = 0;
 void initializePython() {
 	python_lock();
 
-	Py_Initialize();
-	sensors_exited = 0;
+	static bool first_initialized = false;
 
-	if (pModule == nullptr) {
+	if (!first_initialized) {
+		Py_Initialize();
 		PyObject *pName = PyUnicode_FromString(module_name.c_str());
 		pModule = PyImport_Import(pName);
 		Py_DECREF(pName);
@@ -30,6 +30,15 @@ void initializePython() {
 		if (pModule == nullptr) {
 			throw "python module could not be imported";
 		}
+
+		first_initialized = true;
+	}
+	
+	sensors_exited = 0;
+	pModule = PyImport_ReloadModule(pModule);
+
+	if (pModule == nullptr) {
+		throw "python module could not be imported";
 	}
 
 	python_unlock();
@@ -41,11 +50,11 @@ int finalizePython() {
 	sensors_exited++;
 
 	if (sensors_exited == sensors_num) {
-		Py_DECREF(pModule);
+		// Py_DECREF(pModule);
 		Py_XDECREF(pDepthNoiseFunc);
-		Py_Finalize();
+		// Py_Finalize();
 
-		pModule = nullptr;
+		// pModule = nullptr;
 		pDepthNoiseFunc = nullptr;
 		depthNoiseFuncInitialized = false;
 	}
