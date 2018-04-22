@@ -317,38 +317,33 @@ static bool file_exists(const char * name) {
 	return false;
 }
 
-//#define MAX_FR_MODE
+#define MAX_FR_MODE
 //#define MULTI_THREADED
 #ifdef MAX_FR_MODE
 	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)
 	vector<VehicleCameraBase::ImageResponse> create_response(const vector<VehicleCameraBase::ImageRequest>& request_in) {
 		vector<VehicleCameraBase::ImageResponse> response;
 
-		if (request_in.size() == 0) {
-			return response;
+		std::vector<std::future<msr::airlib::VehicleCameraBase::ImageResponse> > futures;
+
+		for (const auto& req : request_in) {
+			VehicleCameraBase* camera = vehicle_->getCamera(req.camera_id);
+			bool dead = false;
+
+			// Check whether camera died
+			if (req.camera_id == 1 || req.image_type == msr::airlib::VehicleCameraBase::ImageType::DepthPlanner) {
+				if (file_exists("C:\\Users\\root\\Documents\\AirSim\\killcam")) {
+					dead = true;
+				}
+			}
+
+			auto f = async(std::launch::async, &VehicleCameraBase::getImage, camera, req.image_type, req.pixels_as_float, req.compress, dead);
+			futures.push_back(std::move(f));
 		}
-		//multi_threaded;
-		const auto item_1 = request_in[0];
-		const auto item_2 = request_in[1];
 
-		//getCamera_s = steady_clock::now();
-		VehicleCameraBase* camera_1 = vehicle_->getCamera(item_1.camera_id);
-		auto f_1 = async(std::launch::async, &VehicleCameraBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
-		VehicleCameraBase* camera_2 = vehicle_->getCamera(item_2.camera_id);
-		auto f_2 = async(std::launch::async, &VehicleCameraBase::getImage, camera_2, item_2.image_type, item_2.pixels_as_float, item_2.compress);
+		for (auto& f : futures)
+			response.push_back(f.get());
 
-		const auto& item_response_2 = f_2.get();
-
-		const auto& item_response_1 = f_1.get();
-		response.push_back(item_response_1);
-		response.push_back(item_response_2);
-		/*
-		for (const auto& item : request_in) {
-		VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
-		const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
-		response.push_back(item_response);
-		}
-		*/
 		return response;
 
 	}

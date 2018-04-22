@@ -199,12 +199,10 @@ public:
 		IMUStats IMU_stats;
 		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
 		const auto& imu_output = imu_->getOutput();
-		IMU_stats.time_stamp = imu_output.time_stamp;
-		// IMU_stats.time_stamp = getTotalTime()*1e9 + this->first_time;
 		IMU_stats.orientation = imu_output.orientation;
 		IMU_stats.angular_velocity = imu_output.angular_velocity;
 		IMU_stats.linear_acceleration = imu_output.linear_acceleration;
-		IMU_stats.after_time_stamp = imu_output.time_stamp;
+		IMU_stats.time_stamp = imu_output.time_stamp;
 
 		getController()->setIMUStats(IMU_stats);
 
