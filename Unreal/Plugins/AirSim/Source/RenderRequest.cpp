@@ -236,7 +236,14 @@ void RenderRequest::AddPythonNoise(TArray<FColor>& bmp)
 		PyObject * pValue = PyObject_CallObject(pNoiseFunc, pArgs);
 
 		if (pValue != NULL) {
-			uint8_t val = (uint8_t)(PyFloat_AsDouble(pValue) * 10.0);
+			double val_double = (PyFloat_AsDouble(pValue) * 10.0);
+
+			if (val_double < 0.5)
+				val_double = 0.5;
+			else if (val_double > 250)
+				val_double = 250;
+
+			uint8_t val = (uint8_t)val_double;
 			item.R = item.G = item.B = val;
 			Py_DECREF(pValue);
 		}
