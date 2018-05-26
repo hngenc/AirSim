@@ -55,11 +55,12 @@ void VehiclePawnWrapper::onCollision(class UPrimitiveComponent* MyComp, class AA
 
     ++state_.collision_info.collision_count;
 
-
+    /*
     UAirBlueprintLib::LogMessageString("Collision", Utils::stringf("#%d with %s - ObjID %d", 
         state_.collision_info.collision_count, 
         state_.collision_info.object_name.c_str(), state_.collision_info.object_id),
         LogDebugLevel::Failure);
+        */
 }
 
 void VehiclePawnWrapper::possess()

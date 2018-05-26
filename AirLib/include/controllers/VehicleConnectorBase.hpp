@@ -19,9 +19,12 @@ public:
     virtual void updateRenderedState(float dt) = 0;
     //called when render changes are required
     virtual void updateRendering(float dt) = 0;
+    //virtual bool setSegmentationObjectID(const std::string& mesh_name, int object_id,
+    //bool is_name_regex = false) = 0;
 
     virtual VehicleControllerBase* getController() = 0;
     virtual ImageCaptureBase* getImageCapture() = 0;
+	virtual void report_stats(std::string) = 0;
     virtual void setPose(const Pose& pose, bool ignore_collision) = 0;
     virtual Pose getPose() = 0;
     virtual bool setSegmentationObjectID(const std::string& mesh_name, int object_id,

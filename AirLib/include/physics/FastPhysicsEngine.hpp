@@ -4,6 +4,7 @@
 #ifndef airsim_core_FastPhysicsEngine_hpp
 #define airsim_core_FastPhysicsEngine_hpp
 
+#include "Battery.hpp"
 #include "common/Common.hpp"
 #include "physics/PhysicsEngineBase.hpp"
 #include <iostream>
@@ -94,6 +95,15 @@ private:
 
         //Utils::log(Utils::stringf("T-VEL %s %" PRIu64 ": ", 
         //    VectorMath::toString(next.twist.linear).c_str(), clock()->getStepCount()));
+
+        // wcui: Update battery stats of the physical body
+        if (body.hasBattery()) { //only intrested in bodies with electrical constraints
+            auto P = p_estimator_.Estimate(body.getEnergyRotorSpecs(), current);
+            body.getBattery()->update(dt, (float)P);
+            body.updateDistanceTraveled(current.pose);
+            body.updateEnergyConsumed((float)P * float(dt));
+            body.updateTime(dt);
+        }
 
         body.setKinematics(next);
         body.setWrench(next_wrench);
@@ -445,7 +455,9 @@ private:
     bool grounded_ = false;
     bool enable_ground_lock_;
     TTimePoint last_message_time;
+    powerlib::PowerEstimator p_estimator_;
 };
 
 }} //namespace
 #endif
+

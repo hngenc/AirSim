@@ -5,7 +5,7 @@
 #define air_RealMultirotorConnector_hpp
 
 #include "controllers/VehicleConnectorBase.hpp"
-
+#include <iostream>
 namespace msr { namespace airlib {
 
 class RealMultirotorConnector : public VehicleConnectorBase
@@ -26,6 +26,10 @@ public:
         unused(dt);
     }
 
+    virtual void report_stats(std::string) 
+    {
+    }
+    
     virtual VehicleControllerBase* getController() override
     {
         return controller_;
@@ -62,6 +66,7 @@ public:
         unused(mesh_name);
         throw std::logic_error("getSegmentationObjectID() call is only supported for simulation");
     }
+     virtual void printLogMessage(const std::string& message, std::string message_param, unsigned char severity) { } 
 
     virtual Kinematics::State getTrueKinematics() override
     {

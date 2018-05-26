@@ -4,6 +4,7 @@
 #ifndef airsim_core_PhysicsBody_hpp
 #define airsim_core_PhysicsBody_hpp
 
+#include "Battery.hpp"
 #include "common/Common.hpp"
 #include "common/UpdatableObject.hpp"
 #include "PhysicsBodyVertex.hpp"
@@ -12,6 +13,7 @@
 #include "Environment.hpp"
 #include <unordered_set>
 #include <exception>
+#include <cmath>
 
 namespace msr { namespace airlib {
 
@@ -41,6 +43,11 @@ public: //interface
     {
         return 0;
     }
+    virtual EnergyRotorSpecs getEnergyRotorSpecs(){
+        EnergyRotorSpecs energy_rotor_specs;     
+        return  energy_rotor_specs;
+    } 
+
     virtual PhysicsBodyVertex& getDragVertex(uint index)
     {
         unused(index);
@@ -106,6 +113,27 @@ public: //methods
             getDragVertex(vertex_index).reset();
         }
     }
+    virtual void updateTime(TTimeDelta dt) {
+        total_time_since_creation_ += dt;
+    }
+    virtual void updateDistanceTraveled(Pose cur_pose) {
+        if (distance_traveled_ == -1) { //first value
+            distance_traveled_ = 0;
+            last_pose_ = cur_pose;
+        }
+         
+        float distance_traveled_temp = sqrt(pow((cur_pose.position - last_pose_.position)[0],2) + pow((cur_pose.position - last_pose_.position)[1],2) + pow((cur_pose.position - last_pose_.position)[2],2));
+        
+        if (distance_traveled_temp > distance_traveled_quanta_) { //only update if greater than certain threshold cause otherwise the error accumulates
+            distance_traveled_ += distance_traveled_temp;
+            last_pose_ = cur_pose;
+        }
+    }
+   
+    virtual void updateEnergyConsumed(float inst_energy) {
+         energy_consumed_ += inst_energy;
+    }
+
 
     virtual void update() override
     {
@@ -114,7 +142,7 @@ public: //methods
         //update position from kinematics so we have latest position after physics update
         environment_->setPosition(getKinematics().pose.position);
         environment_->update();
-
+        //update_distance_traveled(getKinematics().pose);
         kinematics_.update();
 
         //update individual vertices
@@ -224,6 +252,67 @@ public: //methods
         return collision_response_info_;
     }
 
+    bool hasBattery() const { return battery_ != nullptr; }
+ 
+    powerlib::Battery *getBattery() { return battery_; }
+ 	
+ 	float getStateOfCharge() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->StateOfCharge();
+        } else {
+            return -100.0;
+        }
+    }
+ 
+    float getVotage() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->Voltage();
+        } else {
+            return 0.0;
+        }
+    }
+ 
+    float getNominalVoltage() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->NominalVoltage();
+        } else {
+            return 0.0;
+        }
+    }
+ 
+    float getCapacity() const
+    {
+        if (battery_ != nullptr) {
+            return battery_->Capacity();
+        } else {
+            return 0.0;
+        }
+    }
+ 
+    float getDistanceTraveled() const
+    {
+        return distance_traveled_;
+    }
+ 
+     
+    float getEnergyConsumed() const
+    {
+        return energy_consumed_;
+    }
+ 
+    int getCollisionCount() const
+    {
+        return collision_response_info_.collision_count_non_resting;
+    }
+ 
+    float getTotalTime() const
+    {
+        return (float) total_time_since_creation_;
+    }
+
 
 public:
     //for use in physics angine: //TODO: use getter/setter or friend method?
@@ -231,6 +320,11 @@ public:
 
 private:
     real_T mass_, mass_inv_;
+    TTimeDelta total_time_since_creation_ = 0;
+    Pose last_pose_; 
+    float distance_traveled_ = -1.0f;
+    float distance_traveled_quanta_ = .1f; //the smallest amount that would be accumulated to the distance traveled. This is set to cancel the accumulated error
+    float energy_consumed_ = 0;
     Matrix3x3r inertia_, inertia_inv_;
 
     Kinematics kinematics_;
@@ -242,7 +336,11 @@ private:
     CollisionResponseInfo collision_response_info_;
 
     Environment* environment_ = nullptr;
+
+protected:
+    powerlib::Battery* battery_ = nullptr;
 };
 
 }} //namespace
 #endif
+

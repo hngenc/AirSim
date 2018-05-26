@@ -38,6 +38,8 @@ public: //types
     struct RecordingSettings {
         bool record_on_move;
         float record_interval;
+        bool record_upon_start = false;
+        bool use_time_stamp_for_recording = true;
         std::vector<std::string> header_columns;
 
         std::vector<msr::airlib::ImageCaptureBase::ImageRequest> requests;

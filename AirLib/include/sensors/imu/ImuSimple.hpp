@@ -57,7 +57,7 @@ private: //methods
         //acceleration is in world frame so transform to body frame
         output.linear_acceleration = VectorMath::transformToBodyFrame(output.linear_acceleration, 
             ground_truth.kinematics->pose.orientation, true);
-
+		output.time_stamp = ClockFactory::get()->nowNanos();
         //add noise
         addNoise(output.linear_acceleration, output.angular_velocity);
         // TODO: Add noise in orientation?
@@ -90,6 +90,7 @@ private: //methods
         real_T accel_sigma_bias = accel_bias_stability_norm * sqrt_dt;
         state_.accelerometer_bias += gauss_dist.next() * accel_sigma_bias;
     }
+
 
 
 private: //fields

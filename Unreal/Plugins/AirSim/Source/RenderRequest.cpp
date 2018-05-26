@@ -3,6 +3,7 @@
 #include "Engine/TextureRenderTarget2D.h"
 #include "TaskGraphInterfaces.h"
 #include "ImageUtils.h"
+#include <atomic>
 
 #include "AirBlueprintLib.h"
 

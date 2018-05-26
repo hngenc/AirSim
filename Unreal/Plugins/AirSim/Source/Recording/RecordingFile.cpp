@@ -5,7 +5,8 @@
 #include "ImageUtils.h"
 #include "common/ClockFactory.hpp"
 #include "common/common_utils/FileSystem.hpp"
-
+#include "controllers/Settings.hpp"
+#include "AirBlueprintLib.h"
 
 RecordingFile::RecordingFile(const std::vector <std::string>& columns)
 {
@@ -118,8 +119,15 @@ RecordingFile::~RecordingFile()
 
 void RecordingFile::startRecording()
 {
-    try {
-        std::string log_folderpath = common_utils::FileSystem::getLogFolderPath(true);
+	typedef msr::airlib::Settings Settings;
+	Settings& settings = Settings::singleton();
+	bool use_time_stamp;
+	if (settings.getChild("Recording", settings)) {
+		use_time_stamp =  settings.getBool("UseTimeStampsForRecording", true);
+	}
+
+	try {
+        std::string log_folderpath = common_utils::FileSystem::getLogFolderPath(use_time_stamp);
         image_path_ = common_utils::FileSystem::ensureFolder(log_folderpath, "images");
         std::string log_filepath = common_utils::FileSystem::getLogFileNamePath(log_folderpath, record_filename, "", ".txt", false);
         if (log_filepath != "")

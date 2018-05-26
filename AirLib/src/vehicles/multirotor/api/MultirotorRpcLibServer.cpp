@@ -126,8 +126,23 @@ MultirotorRpcLibServer::MultirotorRpcLibServer(SimModeApiBase* simmode_api, stri
         bind("isSimulationMode", [&]() -> bool { 
         return getDroneApi()->isSimulationMode(); 
     });
+   /* 
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getCollisionInfo", [&]() -> MultirotorRpcLibAdapators::CollisionInfo { return getDroneApi()->getCollisionInfo(); });*/
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getFlightStats", [&]() -> MultirotorRpcLibAdapators::FlightStats { return getDroneApi()->getFlightStats(); });
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getIMUStats", [&]() -> MultirotorRpcLibAdapators::IMUStats { return getDroneApi()->getIMUStats(); });
 
-}
+    
+    /* 
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getVoltage", [&]() -> float { return getDroneApi()->getBatteryInfo().voltage; });
+    (static_cast<rpc::server*>(getServer()))->
+        bind("getEnergy", [&]() -> float { return getDroneApi()->getEnergyInfo(); });
+    */
+ 
+  }
 
 //required for pimpl
 MultirotorRpcLibServer::~MultirotorRpcLibServer()

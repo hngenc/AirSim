@@ -720,5 +720,36 @@ void DroneControllerBase::setCollisionInfo(const CollisionInfo& collision_info)
     collision_info_ = collision_info;
 }
 
+FlightStats DroneControllerBase::getFlightStats()
+{
+    return flight_stats_;
+}
+
+IMUStats DroneControllerBase::getIMUStats()
+{
+    return IMU_stats_;
+}
+
+void DroneControllerBase::setIMUStats(const IMUStats& IMU_stats)
+{
+    IMU_stats_ = IMU_stats;
+}
+
+GPSStats DroneControllerBase::getGPSStats()
+{
+	return GPS_stats_;
+}
+
+void DroneControllerBase::setGPSStats(const GPSStats& GPS_stats)
+{
+	GPS_stats_ = GPS_stats;
+}
+
+void DroneControllerBase::setFlightStats(const FlightStats& flight_stats)
+{
+    flight_stats_ = flight_stats;
+}
+
+
 }} //namespace
 #endif

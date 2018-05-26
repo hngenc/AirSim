@@ -4,14 +4,25 @@
 #ifndef msr_airlib_multirotor_hpp
 #define msr_airlib_multirotor_hpp
 
+//#include "AirBlueprintLib.h"
 #include "common/Common.hpp"
 #include "common/CommonStructs.hpp"
 #include "Rotor.hpp"
 #include "controllers/ControllerBase.hpp"
+#include "controllers/Settings.hpp"
 #include "MultiRotorParams.hpp"
 #include <vector>
 #include "physics/PhysicsBody.hpp"
+#include "common/ClockFactory.hpp"
+#include <fstream>
 
+#ifndef DEFAULT_VOLTAGE
+#define DEFAULT_VOLTAGE (11.1f)
+#endif  // DEFAULT_VOLTAGE
+
+#ifndef DEFAULT_CAPACITY
+#define DEFAULT_CAPACITY (5.5f)
+#endif  // DEFAULT_CAPACITY
 
 namespace msr { namespace airlib {
 
@@ -43,6 +54,12 @@ public:
         params_ = params;
 
         PhysicsBody::initialize(params_->getParams().mass, params_->getParams().inertia, initial_kinematic_state, environment);
+        Settings& settings = Settings::singleton();
+        setEnergyRotorSpecs(settings);  //set energy coeffs
+        float v = float(settings.getFloat("BatteryVoltage", DEFAULT_VOLTAGE));
+        float c = float(settings.getFloat("BatteryCapacity", DEFAULT_CAPACITY));
+        
+        battery_ = new powerlib::Battery(v, c);
 
         createRotors(*params_, rotors_, environment);
         createDragVertices();
@@ -69,8 +86,38 @@ public:
 
         //reset sensors last after their ground truth has been reset
         resetSensors();
+
+        // reset battery
+        if (battery_ != nullptr) {
+            battery_->reset();
+        }
     }
 
+    void setEnergyRotorSpecs(Settings& settings){ 
+       
+		Settings energy_model_settings;
+		//if (!settings.getChild("EnergyModelSettings", energy_model_settings)) {
+			//UAirBlueprintLib::LogMessage(TEXT("Energy model settings not provided. Energy values must  be ignored"), "", LogDebugLevel::Failure);
+		//}
+        settings.getChild("EnergyModelSettings", energy_model_settings);
+
+        energy_rotor_specs_.set_mass(float(energy_model_settings.getFloat("mass", 0)));
+        energy_rotor_specs_.set_mass_coeff(float(energy_model_settings.getFloat("mass_coeff", 0)));
+        energy_rotor_specs_.set_vxy_coeff(float(energy_model_settings.getFloat("vxy_coeff", 0)));
+        energy_rotor_specs_.set_axy_coeff(float(energy_model_settings.getFloat("axy_coeff", 0)));
+        energy_rotor_specs_.set_vxy_axy_coeff(float(energy_model_settings.getFloat("vxy_axy_coeff", 0)));
+        energy_rotor_specs_.set_vz_coeff(float(energy_model_settings.getFloat("vz_coeff", 0)));
+        energy_rotor_specs_.set_az_coeff(float(energy_model_settings.getFloat("az_coeff", 0)));
+        energy_rotor_specs_.set_vz_az_coeff(float(energy_model_settings.getFloat("vz_az_coeff", 0)));
+        energy_rotor_specs_.set_one_coeff(float(energy_model_settings.getFloat("one_coeff", 0)));
+        energy_rotor_specs_.set_vxy_wxy_coeff(float(energy_model_settings.getFloat("vxy_wxy_coeff", 0)));
+
+    }
+    
+    EnergyRotorSpecs getEnergyRotorSpecs(){
+        return energy_rotor_specs_;
+    }
+    
     virtual void update() override
     {
         //update forces and environment as a result of last dt
@@ -100,7 +147,18 @@ public:
     virtual void kinematicsUpdated() override
     {
         updateSensors(*params_, getKinematics(), getEnvironment());
+		//static   std::ofstream myfile;
+		//myfile.open("D:\\acceleration_data.txt", std::ios_base::app);
+		//myfile << "----------------" << std::endl;
+		//myfile << "acc w/ gravity"<<getKinematics().accelerations.linear << std::endl;
+		/*
+		myfile << "x" << getKinematics().accelerations.linear[0]
+			<< "y" << getKinematics().accelerations.linear[1]
+			<< "z" << getKinematics().accelerations.linear[2] << std::endl;
+		*/
+		//myfile << "gravity:" << getEnvironment().getState().gravity << std::endl;
 
+		//?myfile.close();
         getController()->update();
 
         //transfer new input values from controller to rotors
@@ -108,6 +166,40 @@ public:
             rotors_.at(rotor_index).setControlSignal(
                 getController()->getVertexControlSignal(rotor_index));
         }
+
+        // wcui: update battery info after kinematics is updated
+        if (battery_ != nullptr) {
+            FlightStats flight_stats;
+            flight_stats.state_of_charge = battery_->StateOfCharge();
+            flight_stats.voltage = battery_->Voltage();
+            flight_stats.energy_consumed = getEnergyConsumed();
+            flight_stats.collision_count = getCollisionCount();
+            flight_stats.flight_time = getTotalTime();
+            flight_stats.distance_traveled = getDistanceTraveled();
+            getController()->setFlightStats(flight_stats);
+        }
+
+		static RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
+
+		IMUStats IMU_stats;
+		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
+		IMU_stats.orientation =imu_->getOutput().orientation;
+		IMU_stats.angular_velocity = imu_->getOutput().angular_velocity;
+		IMU_stats.linear_acceleration = imu_->getOutput().linear_acceleration;
+		IMU_stats.time_stamp = imu_->getOutput().time_stamp;
+
+		getController()->setIMUStats(IMU_stats);
+
+		GPSStats GPS_stats;
+		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorCollection::SensorType::Gps));
+		GPS_stats.latitude = gps_->getOutput().gnss.geo_point.latitude;
+		GPS_stats.longitude = gps_->getOutput().gnss.geo_point.longitude;
+		GPS_stats.altitude = gps_->getOutput().gnss.geo_point.altitude;
+		GPS_stats.time_stamp = gps_->getOutput().time_stamp;
+
+		getController()->setGPSStats(GPS_stats);
+
+		//	getController()->setGroundTruth(this);
     }
 
     //sensor getter
@@ -234,6 +326,8 @@ private: //fields
     //let us be the owner of rotors object
     vector<Rotor> rotors_;
     vector<PhysicsBodyVertex> drag_vertices_;
+     EnergyRotorSpecs energy_rotor_specs_;
+	 
 };
 
 }} //namespace

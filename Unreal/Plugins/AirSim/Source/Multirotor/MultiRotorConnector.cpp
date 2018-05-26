@@ -163,6 +163,7 @@ void MultiRotorConnector::updateRenderedState(float dt)
     last_pose_ = vehicle_.getPose();
     
     collision_response_info = vehicle_.getCollisionResponseInfo();
+    SoC = (int) vehicle_.getStateOfCharge();
     last_debug_pose_ = controller_->getDebugPose();
 
     //update rotor poses
@@ -180,6 +181,20 @@ void MultiRotorConnector::updateRenderedState(float dt)
     if (controller_->getRemoteControlID() >= 0)
         controller_->setRCData(getRCData());
 }
+void MultiRotorConnector::report_stats(std::string stat_file_name){
+        std::ofstream stat_file;
+        stat_file.open(stat_file_name, std::ios_base::app);    
+		stat_file << "Total Flight Time(sec):" << vehicle_.getTotalTime() << std::endl;
+		stat_file << "Distance Traveled(m):" << vehicle_.getDistanceTraveled() << std::endl;
+		//FString number_of_collisions = FString::FromInt(collision_response_info.collison_count_non_resting);
+		//stat_file << "number of collisions:" << std::string(TCHAR_TO_UTF8(*number_of_collisions)) << std::endl;
+		stat_file << "Energy Consumed(j):" << vehicle_.getEnergyConsumed() << std::endl;
+		stat_file << "state of charge:%" << (int)vehicle_.getStateOfCharge() <<std::endl;
+		
+		stat_file.close();
+   //return SoC;
+}
+
 
 void MultiRotorConnector::updateRendering(float dt)
 {
@@ -230,7 +245,13 @@ void MultiRotorConnector::updateRendering(float dt)
     }
     else {
         //UAirBlueprintLib::LogMessage(TEXT("Collision (raw) Count:"), FString::FromInt(collision_response_info.collision_count_raw), LogDebugLevel::Unimportant);
+        UAirBlueprintLib::LogMessage(TEXT("Voltage:"), FString::SanitizeFloat(vehicle_.getVotage()), LogDebugLevel::Failure);
         UAirBlueprintLib::LogMessage(TEXT("Collision Count:"), FString::FromInt(collision_response_info.collision_count_non_resting), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("StateOfCharge:"), FString::SanitizeFloat(vehicle_.getStateOfCharge()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("EnergyConsumed:"), FString::SanitizeFloat(vehicle_.getEnergyConsumed()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("distanceTraveled:"), FString::SanitizeFloat(vehicle_.getDistanceTraveled()), LogDebugLevel::Failure);
+        UAirBlueprintLib::LogMessage(TEXT("flightTime:"), FString::SanitizeFloat(vehicle_.getTotalTime()), LogDebugLevel::Failure);
+//        UAirBlueprintLib::LogMessage(TEXT("orientation:"), FString::SanitizeFloat(controller_.getIMUStats().orientation.), LogDebugLevel::Failure);
     }
 
     /************************************************           for debugging        *****************************************************/

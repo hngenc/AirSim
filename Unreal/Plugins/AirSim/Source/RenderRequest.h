@@ -44,7 +44,6 @@ private:
 
     std::shared_ptr<msr::airlib::WorkerThreadSignal> wait_signal_;
 
-
 public:
     RenderRequest(bool use_safe_method = false);
     ~RenderRequest();

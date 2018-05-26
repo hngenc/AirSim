@@ -1,6 +1,8 @@
 #include "CameraDirector.h"
 #include "GameFramework/PlayerController.h"
 #include "AirBlueprintLib.h"
+// MAV-bench
+#include "controllers/Settings.hpp"
 
 ACameraDirector::ACameraDirector()
 {
@@ -17,6 +19,10 @@ ACameraDirector::ACameraDirector()
     SpringArm->bInheritPitch = true;
     SpringArm->bInheritYaw = true;
     SpringArm->bInheritRoll = true;
+
+    // MAV-bench
+    msr::airlib::Settings& settings = msr::airlib::Settings::singleton();
+    gimbal_ = settings.getBool("gimbal", false);
 }
 
 void ACameraDirector::BeginPlay()
@@ -39,6 +45,13 @@ void ACameraDirector::Tick(float DeltaTime)
     }
     else { //make camera move in desired way
         UAirBlueprintLib::FollowActor(external_camera_, follow_actor_, initial_ground_obs_offset_, ext_obs_fixed_z_);
+
+        // MAV-bench
+        if (gimbal_) {
+            APIPCamera * fpv_cam = getFpvCamera();
+            FRotator drone_orientation = follow_actor_->GetActorRotation();
+            fpv_cam->SetActorRotation(FRotator(0, drone_orientation.Yaw, 0));
+        }
     }
 }
 
@@ -304,5 +317,6 @@ void ACameraDirector::disableCameras(bool fpv, bool backup, bool external)
     if (external && external_camera_)
         external_camera_->disableMain();
 }
+
 
 

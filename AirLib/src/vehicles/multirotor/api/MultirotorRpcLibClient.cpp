@@ -151,6 +151,36 @@ RCData MultirotorRpcLibClient::getRCData()
 {
     return static_cast<rpc::client*>(getClient())->call("getRCData").as<MultirotorRpcLibAdapators::RCData>().to();
 }
+
+/*
+CollisionInfo MultirotorRpcLibClient::getCollisionInfo()
+{
+    return static_cast<rpc::client*>(getClient())->call("getCollisionInfo").as<MultirotorRpcLibAdapators::CollisionInfo>().to();
+}
+*/
+
+FlightStats MultirotorRpcLibClient::getFlightStats()
+{
+    return static_cast<rpc::client*>(getClient())->call("getFlightStats").as<MultirotorRpcLibAdapators::FlightStats>().to();
+}
+
+IMUStats MultirotorRpcLibClient::getIMUStats()
+{
+    return static_cast<rpc::client*>(getClient())->call("getIMUStats").as<MultirotorRpcLibAdapators::IMUStats>().to();
+}
+
+GPSStats MultirotorRpcLibClient::getGPSStats()
+{
+	return static_cast<rpc::client*>(getClient())->call("getGPSStats").as<MultirotorRpcLibAdapators::GPSStats>().to();
+}
+
+/*
+float MultirotorRpcLibClient::getVoltage()
+{
+    return static_cast<rpc::client*>(getClient())->call("getVoltage").as<float>();
+}
+*/
+
 void MultirotorRpcLibClient::setRCData(const RCData& rc_data)
 {
     static_cast<rpc::client*>(getClient())->call("setRCData", MultirotorRpcLibAdapators::RCData(rc_data));

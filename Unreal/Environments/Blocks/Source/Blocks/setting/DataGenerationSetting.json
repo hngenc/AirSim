@@ -1,0 +1,31 @@
+{
+  "char": {
+    "Speed": "550",
+    "Movement": {
+      "X": "1",
+      "Y": "1"
+    }
+  },
+
+  "obstacle_spawning": {
+    "Density": "15000",
+    "Area": {
+      "X": "300",
+      "Y": "300",
+      "Z": "300"
+    }
+  },
+
+  "obstacle": {
+    "MaxSpeed": "3",
+    "Movement": {
+      "Mode": "0"
+    },
+    "Range": {
+      "X": "30000",
+      "Y": "30000",
+      "Z": "30000"
+    }
+
+  }
+}

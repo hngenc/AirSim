@@ -223,6 +223,19 @@ public: //interface for outside world
     virtual CollisionInfo getCollisionInfo() const;
     virtual void setCollisionInfo(const CollisionInfo& collision_info);
 
+    // battery info is propagated similar to collision info
+    virtual FlightStats getFlightStats();
+    virtual void setFlightStats(const FlightStats& flight_stats);
+  
+    virtual IMUStats getIMUStats();
+    virtual void setIMUStats(const IMUStats& flight_stats);
+
+	virtual GPSStats getGPSStats();
+	virtual void setGPSStats(const GPSStats& flight_stats);
+
+    // virtual double getEnergyInfo();
+
+
     //safety settings
     virtual void setSafetyEval(const shared_ptr<SafetyEval> safety_eval_ptr);
     virtual bool setSafety(SafetyEval::SafetyViolationType enable_reasons, float obs_clearance, SafetyEval::ObsAvoidanceStrategy obs_startegy,
@@ -352,8 +365,11 @@ private:// vars
     float obs_avoidance_vel_ = 0.5f;
 
     CollisionInfo collision_info_;
-
-    // we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
+    FlightStats flight_stats_;
+    IMUStats IMU_stats_;
+	GPSStats GPS_stats_;
+    
+	// we make this recursive so that DroneControllerBase subclass can grab StatusLock then call a 
     // base class method on DroneControllerBase that also grabs the StatusLock.
     std::recursive_mutex status_mutex_;
 };

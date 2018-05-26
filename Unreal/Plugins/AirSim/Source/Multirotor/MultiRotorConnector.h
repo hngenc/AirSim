@@ -15,9 +15,8 @@
 #include <chrono>
 #include "api/ApiServerBase.hpp"
 #include "SimJoyStick/SimJoyStick.h"
+#include <string>
 #include <future>
-
-
 class MultiRotorConnector : public msr::airlib::VehicleConnectorBase
 {
 public:
@@ -59,6 +58,7 @@ public:
     virtual int getSegmentationObjectID(const std::string& mesh_name) override;
 
     virtual msr::airlib::ImageCaptureBase* getImageCapture() override;
+    void report_stats(std::string);
 
     virtual void printLogMessage(const std::string& message, std::string message_param = "", unsigned char severity = 0) override;
     virtual Pose getActorPose(const std::string& actor_name) override;
@@ -87,6 +87,7 @@ private:
     };
     unsigned int rotor_count_;
     std::vector<RotorInfo> rotor_info_;
+    int SoC;
 
     CollisionResponseInfo collision_response_info;
 

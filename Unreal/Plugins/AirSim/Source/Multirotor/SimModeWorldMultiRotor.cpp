@@ -38,8 +38,11 @@ ASimModeWorldMultiRotor::ASimModeWorldMultiRotor()
 void ASimModeWorldMultiRotor::BeginPlay()
 {
     Super::BeginPlay();
-}
 
+    if (Super::recording_settings.record_upon_start) {
+        startRecording();
+    }
+}
 
 std::unique_ptr<msr::airlib::ApiServerBase> ASimModeWorldMultiRotor::createApiServer() const
 {
@@ -158,12 +161,103 @@ void ASimModeWorldMultiRotor::setupVehiclesAndCamera(std::vector<VehiclePtr>& ve
     CameraDirector->initializeForBeginPlay(getInitialViewMode(), fpv_vehicle_pawn_wrapper_, external_camera);
 }
 
+// Hasan's additions
+#include "Engine/World.h"
+#include "Kismet/GameplayStatics.h"
+#include "Engine.h"
+
+// Hasan's additions
+static bool file_exists(const char * name) {
+	FILE * file = fopen(name, "r");
+	if (file) {
+		fclose(file);
+		return true;
+	}
+	return false;
+}
+
+// Hasan's additions
+static std::string file_contents(const char * name) {
+	std::string contents;
+
+	FILE * file = fopen(name, "r");
+	if (file) {
+		std::fseek(file, 0, SEEK_END);
+		contents.resize(std::ftell(file));
+		std::rewind(file);
+		std::fread(&contents[0], 1, contents.size(), file);
+
+		fclose(file);
+	}
+
+	return contents;
+}
+
+// Hasan's additions
+static bool time_to_restart() {
+	const std::string filename = "restart";
+	static std::string app_data_path = common_utils::FileSystem::getAppDataFolder();
+	static std::string path = common_utils::FileSystem::combine(app_data_path, filename);
+
+	if (file_exists(path.c_str())) {
+		remove(path.c_str());
+		return true;
+	}
+	return false;
+}
+
+// Hasan's additions
+static bool time_to_exit() {
+	const std::string filename = "exit";
+	static std::string app_data_path = common_utils::FileSystem::getAppDataFolder();
+	static std::string path = common_utils::FileSystem::combine(app_data_path, filename);
+
+	if (file_exists(path.c_str())) {
+		remove(path.c_str());
+		return true;
+	}
+	return false;
+}
+
+static std::string change_level_to() {
+	const std::string filename = "change_level";
+	static std::string app_data_path = common_utils::FileSystem::getAppDataFolder();
+	static std::string path = common_utils::FileSystem::combine(app_data_path, filename);
+
+	std::string new_level = file_contents(path.c_str());
+
+	if (!new_level.empty()) {
+		remove(path.c_str());
+	}
+	return new_level;
+}
+
+static void ExecScriptingCommands(ASimModeWorldMultiRotor * simModeWorldMultiRotor) {
+	UWorld * world = simModeWorldMultiRotor->GetWorld();
+
+	std::string new_level = change_level_to();
+	if (!new_level.empty()) {
+		UGameplayStatics::OpenLevel(simModeWorldMultiRotor, new_level.c_str(), false);
+	}
+
+	if (time_to_restart()) {
+		UGameplayStatics::OpenLevel(simModeWorldMultiRotor, FName(*world->GetName()), false);
+	}
+
+	if (time_to_exit()) {
+		APlayerController* PController = UGameplayStatics::GetPlayerController(world, 0);
+		PController->ConsoleCommand(TEXT("exit"));
+	}
+}
+
 
 void ASimModeWorldMultiRotor::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
 
     getFpvVehiclePawnWrapper()->setLogLine(getLogString());
+    //Hasan's additions
+	ExecScriptingCommands(this);
 }
 
 std::string ASimModeWorldMultiRotor::getLogString() const
@@ -257,4 +351,7 @@ void ASimModeWorldMultiRotor::setupClockSpeed()
         throw std::invalid_argument(common_utils::Utils::stringf(
             "clock_type %s is not recognized", clock_type.c_str()));
 }
+
+
+
 

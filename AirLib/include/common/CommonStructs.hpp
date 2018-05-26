@@ -9,6 +9,119 @@
 
 namespace msr { namespace airlib {
 
+class EnergyRotorSpecs{
+    public:
+        
+        EnergyRotorSpecs() 
+        {}
+        /* 
+        EnergyRotorSpecs(float mass, float mass_coeff, float vxy_coeff, 
+                float axy_coeff, float vxy_axy_coeffs,
+                float vz_coeff, float az_coeff, float vz_az_coeff, float one_coeff, ){
+            mass_ = mass; 
+            mass_coeff_ = mass_coeff; 
+            one_coeff_ = one_coeff; 
+            vxy_wxy_coeff_ = vyx_wxy_coeff; 
+            vxy_coeff_ = vxy_coeff; 
+            axy_coeff_ = axy_coeff; 
+            vxy_axy_coeffs_ = vxy_axy_coeffs;
+            vz_coeff_ = vz_coeff; 
+            az_coeff_ = az_coeff;
+            vz_az_coeff_ = vz_az_coeff;
+        }
+        */
+        float get_mass(){
+            return mass_;
+        }
+       
+        float get_mass_coeff(){
+            return mass_;
+        }
+        
+        float get_one_coeff(){
+            return one_coeff_;
+        }
+        
+        float get_vxy_wxy_coeff(){
+            return vxy_wxy_coeff_;
+        }
+
+        float get_vxy_coeff(){
+            return vxy_coeff_; 
+        }
+        
+        float get_vxy_axy_coeff(){
+            return vxy_coeff_; 
+        }
+
+        float get_vz_coeff(){
+            return vz_coeff_; 
+        }
+
+        float get_axy_coeff(){
+            return axy_coeff_; 
+        }
+
+        float get_az_coeff(){
+            return az_coeff_; 
+        }
+        float get_vz_az_coeff(){
+            return vz_az_coeff_; 
+        }
+    
+        void set_mass(float mass){
+            mass_ = mass;
+        }
+       
+        void set_mass_coeff(float mass_coeff){
+            mass_coeff_ = mass_coeff;
+        }
+        
+        void set_one_coeff(float one_coeff){
+            one_coeff_ = one_coeff;
+        }
+        
+        void set_vxy_wxy_coeff(float vxy_wxy_coeff){
+            vxy_wxy_coeff_ = vxy_wxy_coeff;
+        }
+
+        void set_vxy_coeff(float vxy_coeff){
+            vxy_coeff_ = vxy_coeff; 
+        }
+        
+        void set_vxy_axy_coeff(float vxy_axy_coeff){
+            vxy_axy_coeff_ = vxy_axy_coeff; 
+        }
+
+        void set_vz_coeff(float vz_coeff){
+            vz_coeff_ = vz_coeff; 
+        }
+
+        void set_axy_coeff(float axy_coeff){
+            axy_coeff_ = axy_coeff; 
+        }
+
+        void set_az_coeff(float az_coeff){
+            az_coeff_ = az_coeff; 
+        }
+        void set_vz_az_coeff(float vz_az_coeff){
+            vz_az_coeff_ = vz_az_coeff; 
+        }
+
+    private:
+        float mass_, 
+         mass_coeff_,
+         vxy_coeff_, 
+         axy_coeff_, 
+         vxy_axy_coeff_,
+         vz_coeff_, 
+         az_coeff_, 
+         vz_az_coeff_,
+         one_coeff_,
+         vxy_wxy_coeff_;
+};
+
+
 //velocity
 struct Twist {
     Vector3r linear, angular;
@@ -244,6 +357,70 @@ struct GeoPose {
     GeoPoint position;
 };
 
+// TODO(wcui): Change this class if you want to provide more information to
+// RPC Client
+struct FlightStats{
+    float state_of_charge;
+    float voltage;
+    float energy_consumed;
+    float flight_time;
+    float distance_traveled;
+    int collision_count;  
+    
+    FlightStats()
+    {}
+    
+    FlightStats(float state_of_charge_val,
+                float voltage_val,
+                float energy_consumed_val,
+                float flight_time_val,
+                float distance_traveled_val,
+                int collision_count_val):
+        state_of_charge(state_of_charge_val), 
+        voltage(voltage_val), 
+        energy_consumed(energy_consumed_val), 
+        flight_time(flight_time_val), 
+        distance_traveled(distance_traveled_val),
+        collision_count(collision_count_val)
+    {
+    }
+
+};
+
+
+struct IMUStats{
+    Quaternionr orientation;
+    Vector3r angular_velocity;
+    Vector3r linear_acceleration;
+    uint64_t time_stamp;
+
+    IMUStats()
+    {}
+    
+    IMUStats(Quaternionr orientation_val, Vector3r angular_velocity_val, 
+            Vector3r linear_acceleration_val, uint64_t time_stamp_val): orientation(orientation_val),
+                                      angular_velocity(angular_velocity_val),
+                                      linear_acceleration(linear_acceleration_val),
+                                      time_stamp(time_stamp_val)
+    {}
+};
+
+struct GPSStats {
+	double latitude;
+	double longitude;
+	double altitude;
+	uint64_t time_stamp;
+
+	GPSStats()
+	{}
+
+	GPSStats(double latitude_val, double longitude_val,
+		double altitude_val, uint64_t time_stamp_val) : latitude(latitude_val),
+		longitude(longitude_val),
+		altitude(altitude_val),
+		time_stamp(time_stamp_val)
+	{}
+};
 
 
 }} //namespace

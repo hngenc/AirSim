@@ -98,6 +98,11 @@ private:
     int follow_distance_;
     bool camera_rotation_lag_enabled_;
     int fpv_camera_index_;
+
+    // MAV-bench
+    bool gimbal_ = false;
+	// MAV-bench
+	//bool gimbal;
     int backup_camera_index_ = 4;
 	int front_camera_index_ = 0;
 };

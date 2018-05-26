@@ -104,6 +104,119 @@ public:
             return msr::airlib::Quaternionr(w_val, x_val, y_val, z_val);
         }
     };
+   
+    struct FlightStats{
+
+        float state_of_charge = -1.0f;
+        float voltage = -1.0f;
+        float energy_consumed = -1.0f;
+        float flight_time = -1.0;
+        float distance_traveled = -1.0f;
+        int collision_count = 0;
+
+        MSGPACK_DEFINE_MAP(state_of_charge,
+                voltage,
+                energy_consumed,
+                flight_time,
+                distance_traveled,
+                collision_count);
+
+        FlightStats()
+        {}
+        
+        FlightStats(const msr::airlib::FlightStats& s)
+        {
+            state_of_charge = s.state_of_charge;
+            voltage = s.voltage;
+            energy_consumed = s.energy_consumed;
+            flight_time = s.flight_time;
+            distance_traveled = s.distance_traveled;
+            collision_count = s.collision_count;
+        }
+        
+        msr::airlib::FlightStats to() const
+        {
+            return msr::airlib::FlightStats(state_of_charge,
+                    voltage,
+                    energy_consumed,
+                    flight_time,
+                    distance_traveled,
+                    collision_count);
+       }
+    };
+
+
+    struct IMUStats{
+        Quaternionr orientation;
+        Vector3r angular_velocity;
+        Vector3r linear_acceleration;
+        uint64_t time_stamp;
+
+        IMUStats(const msr::airlib::IMUStats& s)
+        {
+            orientation = s.orientation;
+            angular_velocity = s.angular_velocity;
+            linear_acceleration = s.linear_acceleration;
+            time_stamp = s.time_stamp;  
+        }
+
+        MSGPACK_DEFINE_MAP(orientation,
+                angular_velocity,
+                linear_acceleration,
+                time_stamp);
+
+        IMUStats()
+        {}
+        /*
+        FlightStats(const msr::airlib::FlightStats& s)
+        {
+            state_of_charge = s.state_of_charge;
+            voltage = s.voltage;
+            energy_consumed = s.energy_consumed;
+            flight_time = s.flight_time;
+            distance_traveled = s.distance_traveled;
+            collision_count = s.collision_count;
+        }
+        */
+        msr::airlib::IMUStats to() const
+        {
+            return msr::airlib::IMUStats(orientation.to(),
+                    angular_velocity.to(),
+                    linear_acceleration.to(),
+                    time_stamp);
+        }
+    };
+
+	struct GPSStats {
+		double latitude;
+		double longitude;
+		double altitude;
+		uint64_t time_stamp;
+
+		GPSStats(const msr::airlib::GPSStats& s)
+		{
+			latitude = s.latitude;
+			longitude = s.longitude;
+			altitude = s.altitude;
+			time_stamp = s.time_stamp;
+		}
+
+		MSGPACK_DEFINE_MAP(latitude,
+			longitude,
+			altitude,
+			time_stamp);
+
+		GPSStats()
+		{}
+
+		msr::airlib::GPSStats to() const
+		{
+			return msr::airlib::GPSStats(latitude,
+				longitude,
+				altitude,
+				time_stamp);
+		}
+	};
 
     struct Pose {
         Vector3r position;
