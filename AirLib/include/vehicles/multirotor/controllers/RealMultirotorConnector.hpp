@@ -66,7 +66,6 @@ public:
         unused(mesh_name);
         throw std::logic_error("getSegmentationObjectID() call is only supported for simulation");
     }
-     virtual void printLogMessage(const std::string& message, std::string message_param, unsigned char severity) { } 
 
     virtual Kinematics::State getTrueKinematics() override
     {

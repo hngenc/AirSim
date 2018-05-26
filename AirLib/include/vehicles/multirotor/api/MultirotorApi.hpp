@@ -333,7 +333,7 @@ public:
 	}
 
 #else
-	virtual vector<ImageCaptureBase::ImageResponse> simGetImages(const vector<ImageCaptureBase::ImageRequest>& requests) override
+	virtual vector<ImageCaptureBase::ImageResponse> simGetImages(const vector<ImageCaptureBase::ImageRequest>& requests) const override
     {
 		steady_clock::time_point simGetImage_s;
 		steady_clock::time_point simGetImage_e;

@@ -9,12 +9,15 @@
 #include "common/CommonStructs.hpp"
 #include "Rotor.hpp"
 #include "controllers/ControllerBase.hpp"
-#include "controllers/Settings.hpp"
+#include "common/Settings.hpp"
 #include "MultiRotorParams.hpp"
 #include <vector>
 #include "physics/PhysicsBody.hpp"
 #include "common/ClockFactory.hpp"
 #include <fstream>
+
+#include <sensors/imu/ImuBase.hpp>
+#include <sensors/gps/GpsBase.hpp>
 
 #ifndef DEFAULT_VOLTAGE
 #define DEFAULT_VOLTAGE (11.1f)
@@ -179,11 +182,11 @@ public:
             getController()->setFlightStats(flight_stats);
         }
 
-		static RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
+		// static RandomVectorGaussianR gauss_dist = RandomVectorGaussianR(0, 1);
 
 		IMUStats IMU_stats;
-		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorCollection::SensorType::Imu));
-		IMU_stats.orientation =imu_->getOutput().orientation;
+		const ImuBase* imu_ = static_cast<const ImuBase*>(this->getSensors().getByType(SensorBase::SensorType::Imu));
+		IMU_stats.orientation = imu_->getOutput().orientation;
 		IMU_stats.angular_velocity = imu_->getOutput().angular_velocity;
 		IMU_stats.linear_acceleration = imu_->getOutput().linear_acceleration;
 		IMU_stats.time_stamp = imu_->getOutput().time_stamp;
@@ -191,15 +194,13 @@ public:
 		getController()->setIMUStats(IMU_stats);
 
 		GPSStats GPS_stats;
-		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorCollection::SensorType::Gps));
+		const GpsBase* gps_ = static_cast<const GpsBase*>(this->getSensors().getByType(SensorBase::SensorType::Gps));
 		GPS_stats.latitude = gps_->getOutput().gnss.geo_point.latitude;
 		GPS_stats.longitude = gps_->getOutput().gnss.geo_point.longitude;
 		GPS_stats.altitude = gps_->getOutput().gnss.geo_point.altitude;
 		GPS_stats.time_stamp = gps_->getOutput().time_stamp;
 
 		getController()->setGPSStats(GPS_stats);
-
-		//	getController()->setGroundTruth(this);
     }
 
     //sensor getter
