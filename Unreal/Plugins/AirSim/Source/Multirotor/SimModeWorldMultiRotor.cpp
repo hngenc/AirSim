@@ -38,11 +38,8 @@ ASimModeWorldMultiRotor::ASimModeWorldMultiRotor()
 void ASimModeWorldMultiRotor::BeginPlay()
 {
     Super::BeginPlay();
-
-    if (Super::recording_settings.record_upon_start) {
-        startRecording();
-    }
 }
+
 
 std::unique_ptr<msr::airlib::ApiServerBase> ASimModeWorldMultiRotor::createApiServer() const
 {

@@ -1,242 +1,685 @@
 #include "SimModeBase.h"
+
+#include <memory>
+
 #include "Misc/MessageDialog.h"
+
 #include "Misc/EngineVersion.h"
+
 #include "AirBlueprintLib.h"
+
 #include "Runtime/Launch/Resources/Version.h"
-#include "controllers/Settings.hpp"
+
+#include "common/AirSimSettings.hpp"
+
 #include "Recording/RecordingThread.h"
+
+#include "common/ScalableClock.hpp"
+
+#include "common/SteppableClock.hpp"
+
+#include "ConstructorHelpers.h"
+
+#include "Kismet/GameplayStatics.h"
+
 #include "SimJoyStick/SimJoyStick.h"
 
+#include "Misc/OutputDeviceNull.h"
+
+#include "api/DebugApiServer.hpp"
+
+#include "common/EarthCelestial.hpp"
+
+
+
+
+
+const char ASimModeBase::kUsageScenarioComputerVision[] = "ComputerVision";
+
+
+
+
+
 ASimModeBase::ASimModeBase()
+
 {
-    PrimaryActorTick.bCanEverTick = true;
+
+	PrimaryActorTick.bCanEverTick = true;
+
+
+
+	static ConstructorHelpers::FClassFinder<AActor> sky_sphere_class(TEXT("Blueprint'/Engine/EngineSky/BP_Sky_Sphere'"));
+
+	sky_sphere_class_ = sky_sphere_class.Succeeded() ? sky_sphere_class.Class : nullptr;
+
+
+
 }
+
+
 
 void ASimModeBase::BeginPlay()
+
 {
-    Super::BeginPlay();
 
-    try {
-        readSettings();
-    }
-    catch (std::exception& ex) {
-        UAirBlueprintLib::LogMessageString("Error occured while reading the Settings: ", ex.what(), LogDebugLevel::Failure);
-    }
+	Super::BeginPlay();
 
-    if (clock_speed != 1.0f) {
-        this->GetWorldSettings()->SetTimeDilation(clock_speed);
-        UAirBlueprintLib::LogMessageString("Clock Speed: ", std::to_string(clock_speed), LogDebugLevel::Informational);
-    }
 
-    setStencilIDs();
 
-    record_tick_count = 0;
-    setupInputBindings();
+	simmode_api_.reset(new SimModeApi(this));
 
-    UAirBlueprintLib::LogMessage(TEXT("Press F1 to see help"), TEXT(""), LogDebugLevel::Informational);
+
+
+	setupPhysicsLoopPeriod();
+
+
+
+	setupClockSpeed();
+
+
+
+	setStencilIDs();
+
+
+
+	record_tick_count = 0;
+
+	setupInputBindings();
+
+
+
+	setupTimeOfDay();
+
+
+
+	UAirBlueprintLib::LogMessage(TEXT("Press F1 to see help"), TEXT(""), LogDebugLevel::Informational);
+
 }
+
+
 
 void ASimModeBase::setStencilIDs()
+
 {
-    UAirBlueprintLib::InitializeMeshStencilIDs();
+
+	UAirBlueprintLib::SetMeshNamingMethod(getSettings().segmentation_settings.mesh_naming_method);
+
+
+
+	if (getSettings().segmentation_settings.init_method ==
+
+		AirSimSettings::SegmentationSettings::InitMethodType::CommonObjectsRandomIDs) {
+
+
+
+		UAirBlueprintLib::InitializeMeshStencilIDs(!getSettings().segmentation_settings.override_existing);
+
+	}
+
+	//else don't init
+
 }
+
+
 
 void ASimModeBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
+
 {
-    FRecordingThread::stopRecording();
-    Super::EndPlay(EndPlayReason);
+
+	FRecordingThread::stopRecording();
+
+	Super::EndPlay(EndPlayReason);
+
 }
 
-void ASimModeBase::readSettings()
+
+
+msr::airlib::SimModeApiBase* ASimModeBase::getSimModeApi() const
+
 {
-    //set defaults in case exception occurs
-    is_record_ui_visible = false;
-    initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FLY_WITH_ME;
-    enable_rpc = false;
-    api_server_address = "";
-    default_vehicle_config = "";
-    physics_engine_name = "";
-    usage_scenario = "";
-    enable_collision_passthrough = false;
-    clock_type = "";
-    engine_sound = true;
-    clock_speed = 1.0f;
+
+	return simmode_api_.get();
+
+}
 
 
-    typedef msr::airlib::Settings Settings;
 
-    Settings& settings = Settings::singleton();
+void ASimModeBase::setupTimeOfDay()
 
-    //we had spelling mistake so we are currently supporting SettingsVersion or SettingdVersion :(
-    settings_version_actual = settings.getFloat("SettingsVersion", settings.getFloat("SettingdVersion", 0));
+{
 
-    if (settings_version_actual < settings_version_minimum) {
-        if ((settings.size() == 1 && 
-            ((settings.getString("SeeDocsAt", "") != "") || settings.getString("see_docs_at", "") != ""))
-            || (settings.size() == 0)) {
-            //no warnings because we have default settings
-        }
-        else {
-            UAirBlueprintLib::LogMessageString("Your settings file does not have SettingsVersion element."," This probably means you have old format settings file.", LogDebugLevel::Failure);
-            UAirBlueprintLib::LogMessageString("Please look at new settings and update your settings.json: ","https://git.io/v9mYY", LogDebugLevel::Failure);
-        }
-    }
+	sky_sphere_ = nullptr;
 
-    std::string simmode_name = settings.getString("SimMode", "");
-    if (simmode_name == "") {
-        throw std::invalid_argument("simmode_name is not expected empty in SimModeBase");
-    }
 
-    usage_scenario = settings.getString("UsageScenario", "");
-    default_vehicle_config = settings.getString("DefaultVehicleConfig", "");
-    if (default_vehicle_config == "") {
-        if (simmode_name == "Multirotor")
-            default_vehicle_config = "SimpleFlight";
-        else if (simmode_name == "Car")
-            default_vehicle_config = "PhysXCar4x4";
-        else         
-            UAirBlueprintLib::LogMessageString("SimMode is not valid: ", simmode_name, LogDebugLevel::Failure);
-    }
 
-    enable_rpc = settings.getBool("RpcEnabled", true);
-    //by default we spawn server at local endpoint. Do not use 127.0.0.1 as default below
-    //because for docker container default is 0.0.0.0 and people get really confused why things
-    //don't work
-    api_server_address = settings.getString("LocalHostIp", "");
-    is_record_ui_visible = settings.getBool("RecordUIVisible", true);
-    engine_sound = settings.getBool("EngineSound", false);
+	const auto& tod_settings = getSettings().tod_settings;
 
-    std::string view_mode_string = settings.getString("ViewMode", "");
 
-    if (view_mode_string == "") {
-        if (usage_scenario == "") {
-            if (simmode_name == "Multirotor")
-                view_mode_string = "FlyWithMe";
-            else
-                view_mode_string = "SpringArmChase";
-        }
-        else
-            view_mode_string = "SpringArmChase";
-    }
 
-    if (view_mode_string == "FlyWithMe")
-        initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FLY_WITH_ME;
-    else if (view_mode_string == "Fpv")
-        initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_FPV;
-    else if (view_mode_string == "Manual")
-        initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_MANUAL;
-    else if (view_mode_string == "GroundObserver")
-        initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_GROUND_OBSERVER;
-    else if (view_mode_string == "SpringArmChase")
-        initial_view_mode = ECameraDirectorMode::CAMERA_DIRECTOR_MODE_SPRINGARM_CHASE;
-    else 
-        UAirBlueprintLib::LogMessage("ViewMode setting is not recognized: ", view_mode_string.c_str(), LogDebugLevel::Failure);
-        
-    physics_engine_name = settings.getString("PhysicsEngineName", "");
-    if (physics_engine_name == "") {
-        if (simmode_name == "Multirotor")
-            physics_engine_name = "FastPhysicsEngine";
-        else
-            physics_engine_name = "PhysX";
-    }
+	if (tod_settings.enabled) {
 
-    enable_collision_passthrough = settings.getBool("EnableCollisionPassthrogh", false);
-    clock_type = settings.getString("ClockType", "");
+		TArray<AActor*> sky_spheres;
 
-    if (clock_type == "") {
-        if (default_vehicle_config == "SimpleFlight")
-            clock_type = "SteppableClock";
-        else
-            clock_type = "ScalableClock";
-    }
+		UGameplayStatics::GetAllActorsOfClass(this->GetWorld(), sky_sphere_class_, sky_spheres);
 
-    clock_speed = settings.getFloat("ClockSpeed", 1.0f);
-	/*
-    Settings record_settings;
-    if (settings.getChild("Recording", record_settings)) {
-        recording_settings.record_on_move = record_settings.getBool("RecordOnMove", recording_settings.record_on_move);
-        recording_settings.record_interval = record_settings.getFloat("RecordInterval", recording_settings.record_interval);
-    }
-    */
-    
-	Settings record_settings;
-	if (settings.getChild("Recording", record_settings)) {
-		recording_settings.record_on_move = record_settings.getBool("RecordOnMove", recording_settings.record_on_move);
-		recording_settings.record_interval = record_settings.getFloat("RecordInterval", recording_settings.record_interval);
-		recording_settings.record_upon_start = record_settings.getBool("RocordUponStart", recording_settings.record_upon_start);
+		if (sky_spheres.Num() == 0)
+
+			UAirBlueprintLib::LogMessage(TEXT("BP_Sky_Sphere was not found. "),
+
+				TEXT("TimeOfDay settings would be ignored."), LogDebugLevel::Failure);
+
+		else if (sky_spheres.Num() > 1)
+
+			UAirBlueprintLib::LogMessage(TEXT("More than BP_Sky_Sphere were found. "),
+
+				TEXT("TimeOfDay settings would be applied to first one."), LogDebugLevel::Failure);
+
+
+
+		if (sky_spheres.Num() >= 1) {
+
+			sky_sphere_ = sky_spheres[0];
+
+			static const FName sun_prop_name(TEXT("Directional light actor"));
+
+			auto* p = sky_sphere_class_->FindPropertyByName(sun_prop_name);
+
+			UObjectProperty* sun_prop = Cast<UObjectProperty>(p);
+
+			UObject* sun_obj = sun_prop->GetObjectPropertyValue_InContainer(sky_sphere_);
+
+			sun_ = Cast<ADirectionalLight>(sun_obj);
+
+			if (sun_) {
+
+				sun_->GetRootComponent()->Mobility = EComponentMobility::Movable;
+
+			}
+
+
+
+			tod_sim_clock_start_ = ClockFactory::get()->nowNanos();
+
+			tod_last_update_ = 0;
+
+			if (tod_settings.start_datetime != "")
+
+				tod_start_time_ = Utils::to_time_t(tod_settings.start_datetime, tod_settings.is_start_datetime_dst);
+
+			else
+
+				tod_start_time_ = std::time(nullptr);
+
+		}
+
 	}
-    
-    UAirBlueprintLib::LogMessage("Default config: ", default_vehicle_config.c_str(), LogDebugLevel::Informational);
 
-    // By default this is the column header. Override it in BeginPlay of pawn mode
-    columns = { "Timestamp", "Position(x)", "Position(y)" , "Position(z)", "Orientation(w)", "Orientation(x)", "Orientation(y)", "Orientation(z)", "ImageName" };
+	//else ignore
+
 }
+
+
+
+msr::airlib::VehicleApiBase* ASimModeBase::getVehicleApi() const
+
+{
+
+	auto fpv_vehicle = getFpvVehiclePawnWrapper();
+
+	if (fpv_vehicle)
+
+		return fpv_vehicle->getApi();
+
+	else
+
+		return nullptr;
+
+}
+
+
+
+bool ASimModeBase::isPaused() const
+
+{
+
+	return false;
+
+}
+
+
+
+void ASimModeBase::pause(bool is_paused)
+
+{
+
+	//should be overriden by derived class
+
+	unused(is_paused);
+
+	throw std::domain_error("Pause is not implemented by SimMode");
+
+}
+
+
+
+void ASimModeBase::continueForTime(double seconds)
+
+{
+
+	//should be overriden by derived class
+
+	unused(seconds);
+
+	throw std::domain_error("continueForTime is not implemented by SimMode");
+
+}
+
+
+
+std::unique_ptr<msr::airlib::ApiServerBase> ASimModeBase::createApiServer() const
+
+{
+
+	//should be overriden by derived class
+
+	return std::unique_ptr<msr::airlib::ApiServerBase>(new msr::airlib::DebugApiServer());
+
+}
+
+
+
+void ASimModeBase::setupClockSpeed()
+
+{
+
+	//default setup - this should be overriden in derived modes as needed
+
+
+
+	float clock_speed = getSettings().clock_speed;
+
+
+
+	//setup clock in ClockFactory
+
+	std::string clock_type = getSettings().clock_type;
+
+
+
+	if (clock_type == "ScalableClock")
+
+		ClockFactory::get(std::make_shared<msr::airlib::ScalableClock>(clock_speed == 1 ? 1 : 1 / clock_speed));
+
+	else if (clock_type == "SteppableClock")
+
+		ClockFactory::get(std::make_shared<msr::airlib::SteppableClock>(
+
+			static_cast<msr::airlib::TTimeDelta>(getPhysicsLoopPeriod() * 1E-9 * clock_speed)));
+
+	else
+
+		throw std::invalid_argument(common_utils::Utils::stringf(
+
+			"clock_type %s is not recognized", clock_type.c_str()));
+
+}
+
+
+
+void ASimModeBase::setupPhysicsLoopPeriod()
+
+{
+
+	/*
+
+	300Hz seems to be minimum for non-aggresive flights
+
+	400Hz is needed for moderately aggressive flights (such as
+
+	high yaw rate with simultaneous back move)
+
+	500Hz is recommanded for more aggressive flights
+
+	Lenovo P50 high-end config laptop seems to be topping out at 400Hz.
+
+	HP Z840 desktop high-end config seems to be able to go up to 500Hz.
+
+	To increase freq with limited CPU power, switch Barometer to constant ref mode.
+
+	*/
+
+
+
+	if (getSettings().usage_scenario == kUsageScenarioComputerVision)
+
+		physics_loop_period_ = 30000000LL; //30ms
+
+	else
+
+		physics_loop_period_ = 3000000LL; //3ms
+
+}
+
+
+
+long long ASimModeBase::getPhysicsLoopPeriod() const //nanoseconds
+
+{
+
+	return physics_loop_period_;
+
+}
+
+
+
+void ASimModeBase::setPhysicsLoopPeriod(long long  period)
+
+{
+
+	physics_loop_period_ = period;
+
+}
+
+
 
 void ASimModeBase::Tick(float DeltaSeconds)
+
 {
-    if (isRecording())
-        ++record_tick_count;
-    Super::Tick(DeltaSeconds);
+
+	if (isRecording())
+
+		++record_tick_count;
+
+
+
+	advanceTimeOfDay();
+
+
+
+	showClockStats();
+
+
+
+	Super::Tick(DeltaSeconds);
+
 }
+
+
+
+void ASimModeBase::showClockStats()
+
+{
+
+	float clock_speed = getSettings().clock_speed;
+
+	if (clock_speed != 1) {
+
+		UAirBlueprintLib::LogMessageString("ClockSpeed config, actual: ",
+
+			Utils::stringf("%f, %f", clock_speed, ClockFactory::get()->getTrueScaleWrtWallClock()),
+
+			LogDebugLevel::Informational);
+
+	}
+
+}
+
+
+
+void ASimModeBase::advanceTimeOfDay()
+
+{
+
+	const auto& settings = getSettings();
+
+
+
+	if (settings.tod_settings.enabled && sky_sphere_ && sun_) {
+
+		auto secs = ClockFactory::get()->elapsedSince(tod_last_update_);
+
+		if (secs > settings.tod_settings.update_interval_secs) {
+
+			tod_last_update_ = ClockFactory::get()->nowNanos();
+
+
+
+			auto interval = ClockFactory::get()->elapsedSince(tod_sim_clock_start_) * settings.tod_settings.celestial_clock_speed;
+
+			uint64_t cur_time = ClockFactory::get()->addTo(tod_sim_clock_start_, interval) / 1E9;
+
+
+
+			UAirBlueprintLib::LogMessageString("DateTime: ", Utils::to_string(cur_time), LogDebugLevel::Informational);
+
+
+
+			auto coord = msr::airlib::EarthCelestial::getSunCoordinates(cur_time, settings.origin_geopoint.home_point.latitude,
+
+				settings.origin_geopoint.home_point.longitude);
+
+
+
+			auto rot = FRotator(-coord.altitude, coord.azimuth, 0);
+
+			sun_->SetActorRotation(rot);
+
+
+
+			FOutputDeviceNull ar;
+
+			sky_sphere_->CallFunctionByNameWithArguments(TEXT("UpdateSunDirection"), ar, NULL, true);
+
+		}
+
+
+
+	}
+
+}
+
+
 
 void ASimModeBase::reset()
+
 {
-    //Should be overridden by derived classes
+
+	//Should be overridden by derived classes
+
 }
 
-VehiclePawnWrapper* ASimModeBase::getFpvVehiclePawnWrapper()
+
+
+VehiclePawnWrapper* ASimModeBase::getFpvVehiclePawnWrapper() const
+
 {
-    //Should be overridden by derived classes
-    return nullptr;
+
+	//Should be overridden by derived classes
+
+	return nullptr;
+
 }
+
+
+
 
 
 std::string ASimModeBase::getReport()
+
 {
-    static const std::string empty_string = std::string();
-    //Should be overridden by derived classes
-    return empty_string;
+
+	static const std::string empty_string = std::string();
+
+	//Should be overridden by derived classes
+
+	return empty_string;
+
 }
+
+
 
 void ASimModeBase::setupInputBindings()
-{
-    UAirBlueprintLib::EnableInput(this);
 
-    UAirBlueprintLib::BindActionToKey("InputEventResetAll", EKeys::BackSpace, this, &ASimModeBase::reset);
+{
+
+	UAirBlueprintLib::EnableInput(this);
+
+
+
+	UAirBlueprintLib::BindActionToKey("InputEventResetAll", EKeys::BackSpace, this, &ASimModeBase::reset);
+
 }
 
-bool ASimModeBase::isRecording()
+
+
+bool ASimModeBase::isRecording() const
+
 {
-    return FRecordingThread::isRecording();
+
+	return FRecordingThread::isRecording();
+
 }
 
-bool ASimModeBase::isRecordUIVisible()
+
+
+bool ASimModeBase::isRecordUIVisible() const
+
 {
-    return is_record_ui_visible;
+
+	return getSettings().is_record_ui_visible;
+
 }
 
-ECameraDirectorMode ASimModeBase::getInitialViewMode()
+
+
+ECameraDirectorMode ASimModeBase::getInitialViewMode() const
+
 {
-    return initial_view_mode;
+
+	return Utils::toEnum<ECameraDirectorMode>(getSettings().initial_view_mode);
+
 }
+
+
 
 void ASimModeBase::startRecording()
+
 {
-    FRecordingThread::startRecording(getFpvVehiclePawnWrapper()->getCameraConnector(0),
-        getFpvVehiclePawnWrapper()->getKinematics(), recording_settings, columns, getFpvVehiclePawnWrapper());
+
+	FRecordingThread::startRecording(getFpvVehiclePawnWrapper()->getImageCapture(),
+
+		getFpvVehiclePawnWrapper()->getTrueKinematics(), getSettings().recording_settings, getFpvVehiclePawnWrapper());
+
 }
+
+
+
+const AirSimSettings& ASimModeBase::getSettings() const
+
+{
+
+	return AirSimSettings::singleton();
+
+}
+
+
+
+
 
 bool ASimModeBase::toggleRecording()
-{
-    if (isRecording())
-        stopRecording();
-    else
-        startRecording();
 
-    return isRecording();
+{
+
+	if (isRecording())
+
+		stopRecording();
+
+	else
+
+		startRecording();
+
+
+
+	return isRecording();
+
 }
+
+
 
 void ASimModeBase::stopRecording()
+
 {
-    FRecordingThread::stopRecording();
+
+	FRecordingThread::stopRecording();
+
 }
+
+
+
+
+
+//************************* SimModeApi *****************************/
+
+
+
+ASimModeBase::SimModeApi::SimModeApi(ASimModeBase* simmode)
+
+	: simmode_(simmode)
+
+{
+
+}
+
+
+
+void ASimModeBase::SimModeApi::reset()
+
+{
+
+	simmode_->reset();
+
+}
+
+
+
+msr::airlib::VehicleApiBase* ASimModeBase::SimModeApi::getVehicleApi()
+
+{
+
+	return simmode_->getVehicleApi();
+
+}
+
+
+
+bool ASimModeBase::SimModeApi::isPaused() const
+
+{
+
+	return simmode_->isPaused();
+
+}
+
+
+
+void ASimModeBase::SimModeApi::pause(bool is_paused)
+
+{
+
+	simmode_->pause(is_paused);
+
+}
+
+
+
+void ASimModeBase::SimModeApi::continueForTime(double seconds)
+
+{
+
+	simmode_->continueForTime(seconds);
+
+}
+
+
+
+//************************* SimModeApi *****************************/

@@ -2,7 +2,6 @@
 #include <exception>
 #include "AirBlueprintLib.h"
 
-
 void ASimModeWorldBase::BeginPlay()
 {
     Super::BeginPlay();
@@ -33,13 +32,11 @@ void ASimModeWorldBase::BeginPlay()
 void ASimModeWorldBase::EndPlay(const EEndPlayReason::Type EndPlayReason)
 {
     //remove everything that we created in BeginPlay
-    FString stat_file_name = FString(Settings::getFullPath("stat_results.json").c_str());
+    FString stat_file_name = FString(msr::airlib::Settings::getFullPath("stat_results.json").c_str());
 	std::string stat_file_name_converted = std::string(TCHAR_TO_UTF8(*stat_file_name));
     for (auto& vehicle : vehicles_)
  		vehicle->report_stats((std::string) stat_file_name_converted);
 
-
-    
     physics_world_.reset();
     physics_engine_.reset();
     vehicles_.clear();

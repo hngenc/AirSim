@@ -41,6 +41,12 @@ public:
 
     std::string getFullFilePath() { return full_filepath_; }
 
+	static std::string getFullPath(std::string fileName)
+	{
+		std::string path = common_utils::FileSystem::getAppDataFolder();
+		return common_utils::FileSystem::combine(path, fileName);
+	}
+
     static std::string getUserDirectoryFullPath(std::string fileName)
     {
         std::string path = common_utils::FileSystem::getAppDataFolder();
