@@ -2,7 +2,7 @@
 #include "GameFramework/PlayerController.h"
 #include "AirBlueprintLib.h"
 // MAV-bench
-#include "controllers/Settings.hpp"
+#include "common/AirSimSettings.hpp"
 
 ACameraDirector::ACameraDirector()
 {
