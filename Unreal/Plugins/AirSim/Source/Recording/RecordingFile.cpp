@@ -5,7 +5,7 @@
 #include "ImageUtils.h"
 #include "common/ClockFactory.hpp"
 #include "common/common_utils/FileSystem.hpp"
-#include "controllers/Settings.hpp"
+#include "common/AirSimSettings.hpp"
 #include "AirBlueprintLib.h"
 
 RecordingFile::RecordingFile(const std::vector <std::string>& columns)
