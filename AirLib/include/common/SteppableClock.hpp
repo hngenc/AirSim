@@ -20,7 +20,6 @@ public:
         : current_(start), step_(step)
     {
         start_ = current_ = start ? start : Utils::getTimeSinceEpochNanos();
-		// current_ = std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 
     TTimePoint stepBy(TTimeDelta amount)

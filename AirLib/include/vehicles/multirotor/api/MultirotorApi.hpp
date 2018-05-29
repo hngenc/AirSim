@@ -256,79 +256,44 @@ public:
         pending_ = std::make_shared<DirectCancelableBase>();
         controller_->enableApiControl(is_enabled);
     }
-
-    /*
-    virtual vector<ImageCaptureBase::ImageResponse> simGetImages(const vector<ImageCaptureBase::ImageRequest>& requests) const override
-    {
-        vector<ImageCaptureBase::ImageResponse> responses;
-        ImageCaptureBase* image_capture = vehicle_->getImageCapture();
-        image_capture->getImages(requests, responses);
-        return responses;
-    }
-   */
     
 //#define MAX_FR_MODE
 //#define MULTI_THREADED
 #ifdef MAX_FR_MODE
 	//this mode multithreads requests and software pipelines the consequent requests (network and generation are software pipelined)
-	vector<ImageCaptureBase::ImageResponse> create_response(const vector<ImageCaptureBase::ImageRequest>& requests) {
-		vector<ImageCaptureBase::ImageResponse> response;
+	vector<ImageCaptureBase::ImageResponse> create_response(const vector<ImageCaptureBase::ImageRequest>& requests) const
+	{
+		vector<ImageCaptureBase::ImageResponse> responses;
 
         ImageCaptureBase* image_capture = vehicle_->getImageCapture();
-        auto f = async(std::launch::async, &ImageCaptureBase::getImages, image_capture, std::ref(requests), std::ref(responses));
+
+		auto image_capture_function = [image_capture, &requests, &responses]() {
+			return image_capture->getImages(requests, responses);
+		};
+		auto f = async(std::launch::async, image_capture_function);
+
         f.get();
         return responses;
-
-        /*
-		if (request_in.size() == 0) {
-			return response;
-		}
-
-		//multi_threaded;
-		const auto item_1 = request_in[0];
-		const auto item_2 = request_in[1];
-
-		//getCamera_s = steady_clock::now();
-		VehicleCameraBase* camera_1 = vehicle_->getCamera(item_1.camera_id);
-		auto f_1 = async(std::launch::async, &ImageCaptureBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
-		VehicleCameraBase* camera_2 = vehicle_->getCamera(item_2.camera_id);
-		auto f_2 = async(std::launch::async, &ImageCaptureBase::getImage, camera_2, item_2.image_type, item_2.pixels_as_float, item_2.compress);
-
-		const auto& item_response_2 = f_2.get();
-
-		const auto& item_response_1 = f_1.get();
-		response.push_back(item_response_1);
-		response.push_back(item_response_2);
-        */
-
-		/*
-		for (const auto& item : request_in) {
-		VehicleCameraBase* camera = vehicle_->getCamera(item.camera_id);
-		const auto& item_response = camera->getImage(item.image_type, item.pixels_as_float, item.compress);
-		response.push_back(item_response);
-		}
-		*/
-
-		// return response;
-
 	}
 
 	virtual vector<ImageCaptureBase::ImageResponse> simGetImages(const vector<ImageCaptureBase::ImageRequest>& request_new) const override
 	{
-		//auto f_1 = async(std::launch::async, &ImageCaptureBase::getImage, camera_1, item_1.image_type, item_1.pixels_as_float, item_1.compress);
 		vector<ImageCaptureBase::ImageResponse> response;
-		 //this is an empty request, so we have declated f_3
-		if (this->req_ctr == 0) {
-			this->req_ctr++;
-			this->f_3.get();
-			this->request_ = request_new;
-			this->f_3 = async(std::launch::async, &DroneApi::create_response, this, this->request_);
+
+		static int req_ctr = 0;
+		static vector<ImageCaptureBase::ImageRequest> request_;
+		static std::future<vector<ImageCaptureBase::ImageResponse>> f;
+
+		if (req_ctr == 0) {
+			req_ctr++;
+			request_ = request_new;
+			f = async(std::launch::async, &MultirotorApi::create_response, this, std::cref(request_));
 			return response;
 		}
 
-		response = this->f_3.get();
-		this->request_ = request_new;
-		this->f_3 = async(std::launch::async, &DroneApi::create_response, this, this->request_);
+		response = f.get();
+		request_ = request_new;
+		f = async(std::launch::async, &MultirotorApi::create_response, this, std::cref(request_));
 		return response;
 	}
 
@@ -726,12 +691,6 @@ private: //vars
     std::mutex action_mutex_;
     std::mutex cancel_mutex_;
     std::shared_ptr<CancelableBase> pending_;
-    int req_ctr;
-    vector<ImageCaptureBase::ImageRequest> request_;
-#if defined(MAX_FR_MODE) || defined(MULTI_THREADED)
-     std::future<vector<ImageCaptureBase::ImageResponse>> f_3 = async(std::launch::async, &DroneApi::create_response, this, request_);
-#endif
-
 };
 
 }} //namespace
