@@ -72,7 +72,7 @@ macro(CommonSetup)
                 # make sure to match the compiler flags with which the Unreal
                 # Engine is built with
                 set(CMAKE_CXX_FLAGS "\
-                    -nostdinc++ -ferror-limit=10 -isystem ${LIBCXX_INC_PATH} \
+                    -nostdinc++  -isystem ${LIBCXX_INC_PATH} \
                     -D__CLANG__ ${CMAKE_CXX_FLAGS}")
 
                 # removed -lsupc++ from below (Git issue # 678)

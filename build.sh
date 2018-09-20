@@ -8,23 +8,23 @@ set -e
 # set -x
 
 #check for correct verion of llvm
-if [[ ! -d "llvm-source-50" ]]; then
-    if [[ -d "llvm-source-39" ]]; then
-        echo "Hello there! We just upgraded AirSim to Unreal Engine 4.18."
-        echo "Here are few easy steps for upgrade so everything is new and shiny :)"
-        echo "https://github.com/Microsoft/AirSim/blob/master/docs/unreal_upgrade.md"
-        exit 1
-    else
-        echo "The llvm-souce-50 folder was not found! Mystery indeed."
-    fi
-fi
+#if [[ ! -d "llvm-source-50" ]]; then
+#    if [[ -d "llvm-source-39" ]]; then
+#        echo "Hello there! We just upgraded AirSim to Unreal Engine 4.18."
+#        echo "Here are few easy steps for upgrade so everything is new and shiny :)"
+#        echo "https://github.com/Microsoft/AirSim/blob/master/docs/unreal_upgrade.md"
+#        exit 1
+#    else
+#        echo "The llvm-souce-50 folder was not found! Mystery indeed."
+#    fi
+#fi
 
 # check for libc++
-if [[ !(-d "./llvm-build/output/lib") ]]; then
-    echo "ERROR: clang++ and libc++ is necessary to compile AirSim and run it in Unreal engine"
-    echo "Please run setup.sh first."
-    exit 1
-fi
+#if [[ !(-d "./llvm-build/output/lib") ]]; then
+#    echo "ERROR: clang++ and libc++ is necessary to compile AirSim and run it in Unreal engine"
+#    echo "Please run setup.sh first."
+#    exit 1
+#fi
 
 # check for rpclib
 if [ ! -d "./external/rpclib/rpclib-2.2.1" ]; then
@@ -42,23 +42,9 @@ fi
 
 
 # set up paths of cc and cxx compiler
-if [ "$1" == "gcc" ]; then
-    export CC="gcc"
-    export CXX="g++"
-else
-    if [ "$(uname)" == "Darwin" ]; then
-        CMAKE="$(greadlink -f cmake_build/bin/cmake)"
-
-        export CC=/usr/local/opt/llvm\@5.0/bin/clang
-        export CXX=/usr/local/opt/llvm\@5.0/bin/clang++
-    else
-        CMAKE="$(readlink -f cmake_build/bin/cmake)"
-
-        export CC="clang-5.0"
-        export CXX="clang++-5.0"
-    fi
-fi
-
+export CC="gcc"
+export CXX="g++"
+CMAKE="$(readlink -f cmake_build/bin/cmake)"
 #install EIGEN library
 if [[ !(-d "./AirLib/deps/eigen3/Eigen") ]]; then 
     echo "eigen is not installed. Please run setup.sh first."
@@ -106,12 +92,12 @@ cp $build_dir/output/lib/librpc.a AirLib/deps/rpclib/lib/librpc.a
 rsync -a --delete $build_dir/output/lib/ AirLib/lib/x64/Debug
 rsync -a --delete external/rpclib/rpclib-2.2.1/include AirLib/deps/rpclib
 rsync -a --delete MavLinkCom/include AirLib/deps/MavLinkCom
-rsync -a --delete AirLib Unreal/Plugins/AirSim/Source
+#rsync -a --delete AirLib Unreal/Plugins/AirSim/Source
 
 # Update Blocks project
-Unreal/Environments/Blocks/clean.sh
-mkdir -p Unreal/Environments/Blocks/Plugins
-rsync -a --delete Unreal/Plugins/AirSim Unreal/Environments/Blocks/Plugins
+#Unreal/Environments/Blocks/clean.sh
+#mkdir -p Unreal/Environments/Blocks/Plugins
+#rsync -a --delete Unreal/Plugins/AirSim Unreal/Environments/Blocks/Plugins
 
 set +x
 

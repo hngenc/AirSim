@@ -103,8 +103,6 @@ rm 3.3.2.zip
 
 popd >/dev/null
 
-export CMAKE="ok"
-
 set +x
 echo ""
 echo "************************************"
